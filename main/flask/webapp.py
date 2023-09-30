@@ -6,7 +6,6 @@ app = Flask(__name__)
 def home():
     return render_template("homepage.html")
 
-
 @app.route("/login", methods=["POST", "GET"])
 def login():
     if request.method == "POST":
@@ -14,7 +13,6 @@ def login():
         return redirect(url_for("user", usr=form_data["username"]))
     else:
         return render_template("loginpage.html")
-
 
 @app.route("/<usr>")
 def user(usr):

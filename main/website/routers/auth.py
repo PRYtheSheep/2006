@@ -4,11 +4,12 @@ from .. import models
 from .. import forms
 from .. import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, login_required, logout_user, current_user, login_remembered
 
 auth = Blueprint('auth',__name__)
 
 @auth.route("/login", methods=["GET","POST"])
-def loginWebsite():
+def login_account():
     form = forms.LoginForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -16,21 +17,23 @@ def loginWebsite():
         user = models.User.query.filter_by(email=email).first()
         if user:
             if check_password_hash(user.password, password):
-                flash("Logged in successfully", category='success')
-                # 
+                login_user(user, remember=True)
+                return redirect(url_for("views.landing_page"))
             else:
                 flash('Incorrect email or password', category='error')
         else:
             flash('Incorrect email or password', category='error')
         
-    return render_template("loginpage.html")
+    return render_template("loginpage.html", user=current_user, form=form)
 
-@auth.route("/logout", methods=["POST"])
-def logoutAccount():
-    return "<p>logout</p>"
+@auth.route("/logout")
+@login_required
+def logout_account():
+    logout_user()
+    return redirect(url_for("auth.login_account"))
 
 @auth.route("/register", methods=["GET","POST"])
-def registration():
+def register_account():
     form = forms.RegistrationForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -38,10 +41,11 @@ def registration():
         if user:
             flash("Email is already taken",category='error')
         else:
-            password = generate_password_hash(form.password.data)
+            password = generate_password_hash(form.password.data) #123456789aA$
             new_user = models.User(email=email, password=password)
             db.session.add(new_user)
             db.session.commit()
-            return redirect(url_for('auth.loginWebsite'))
-    return render_template("register.html", form=form)
+            flash("Registered Successfully", category='success')
+            return redirect(url_for('auth.login_account'))
+    return render_template("register.html", user=current_user, form=form)
 

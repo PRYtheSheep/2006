@@ -14,24 +14,28 @@
             {% endfor %}
         {% endfor %}
   {% endif %}
-    <div class="col-md-5 offset-md-3">
-        <form action="" method="post">
-          {{ form.csrf_token }}
-          <div class="form-group">
-            {{ render_field(form.email, class_="form-control") }}
-          </div>
-          <div class="form-group">
-            {{ render_field(form.password, class_="form-control") }}
-          </div>
-          <div class="form-group">
-            {{ render_field(form.confirm_password, class_="form-control") }}
-          </div>
-          <div>
-            <input type="submit" class="btn btn-primary" value="Register">
-          </div>
-      </form>
-    </div>
-
+  <div class="row">
+      <div class="col-md-8">
+          <form action="{{ url_for('auth.register_account') }}" method="post">
+            {{ form.csrf_token }}
+            <div class="form-group">
+              {{ render_field(form.email, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.password, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.confirm_password, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.register_as, class_="form-control form-select") }}
+            </div>
+            <div>
+              <input type="submit" class="btn btn-primary" value="Register">
+            </div>
+        </form>
+      </div>
+  </div>
 {% endblock content %}
 
 {% block bottomScript %}
