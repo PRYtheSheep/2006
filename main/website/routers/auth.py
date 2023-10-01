@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from werkzeug.security import check_password_hash
-from .. import models
-from .. import forms
-from .. import db
+from .. import models, forms, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user, login_remembered
 
@@ -42,10 +40,17 @@ def register_account():
             flash("Email is already taken",category='error')
         else:
             password = generate_password_hash(form.password.data) #123456789aA$
-            new_user = models.User(email=email, password=password)
+            username = email.split("@")[0]
+            account_type = form.register_as.data
+
+            new_user = models.User(email=email, 
+                                   password=password, 
+                                   username=username, 
+                                   account_type=account_type)
+            
             db.session.add(new_user)
             db.session.commit()
+            
             flash("Registered Successfully", category='success')
             return redirect(url_for('auth.login_account'))
     return render_template("register.html", user=current_user, form=form)
-

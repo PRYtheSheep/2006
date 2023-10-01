@@ -25,4 +25,15 @@ class LoginForm(FlaskForm):
     email = StringField('Email Address', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
 
+class ForgetPasswordForm(FlaskForm):
+    email = StringField('Enter your email address', [validators.DataRequired()])
 
+class ChangeForgetPasswordForm(FlaskForm):
+    password = PasswordField('Password', [
+        validators.Length(min=12, max=18),
+        validators.DataRequired(),
+        validators.EqualTo('confirm_password', message='Passwords must match.'),
+        validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
+                          , message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
+    ])
+    confirm_password = PasswordField('Confirm Password', [validators.DataRequired()])

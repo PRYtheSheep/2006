@@ -1,12 +1,4 @@
-ToDo:
-1. basic entity classes
-2. home page
-3. login page
-
-"main" folder contains all the python files
-
-Required packages/libraries:
-1. Flask
-2. MySQN-Python connector
-
-test commit from pycharm
+### How to start the website
+1. Clone repository onto your preferred ide
+2. run "pip install -r requirements.txt" in the command line
+3. run main.py
