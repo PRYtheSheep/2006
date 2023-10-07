@@ -41,6 +41,7 @@ class Property(db.Model):
     lease_term = db.Column(db.String(10))
     negotiable_pricing = db.Column(db.String(3))
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
+    isApproved = db.Column(db.Boolean)
 
     @staticmethod
     def query(
@@ -70,6 +71,7 @@ class Property(db.Model):
         numBedStatement = f"number_of_bedrooms >= {numBedLowerBound} AND number_of_bedrooms <= {numBedUpperBound} "
         yearStatement = f"year_built >= {yearLowerBound} AND year_built <= {yearUpperBound} "
         floorStatement = f"floor_level >= {floorLevelLowerBound} AND floor_level <= {floorLevelUpperBound} "
+        isApprovedStatement = "isApproved = true"
 
         leaseStatement = []
         for lease in leaseTerm:
@@ -79,10 +81,10 @@ class Property(db.Model):
         dateStatement = f"rent_approval_date > '{listDate}' "
         negotiableStatement = f"negotiable_pricing = '{negotiable}' "
 
-        statement = f"SELECT * from property WHERE " + rentStatement + "AND " + pricePSMStatement + "AND " + numBedStatement + "AND " + yearStatement + "AND " + floorStatement + "AND " + dateStatement + "AND " + negotiableStatement + "AND "
+        statement = f"SELECT * from property WHERE " + rentStatement + "AND " + pricePSMStatement + "AND " + numBedStatement + "AND " + yearStatement + "AND " + floorStatement + "AND " + dateStatement + "AND " + negotiableStatement + "AND " + isApprovedStatement + " AND "
         for lstatement in leaseStatement:
             statement = statement + lstatement + "OR "
-        statement = statement[:len(statement)-4]
+        statement = statement[:len(statement) - 4]
 
         query = db.session.execute(text(statement)).fetchall()
 
@@ -92,6 +94,10 @@ class Property(db.Model):
             latitude1, longitude1 = 0, 0
 
             for i, name in enumerate(column_names):
+
+                if name == "isApproved" and row[i] == 0:
+                    continue  # property not yet approved, skip it
+
                 dic.update({
                     name: row[i]
                 })
@@ -101,7 +107,9 @@ class Property(db.Model):
                     longitude1 = float(row[i]) * (math.pi / 180)
 
             latitude2, longitude2 = inputlatitude * (math.pi / 180), inputlongitude * (math.pi / 180)
-            distance = math.acos(math.sin(latitude1) * math.sin(latitude2) + math.cos(latitude1) * math.cos(latitude2) * math.cos(longitude2 - longitude1)) * 6371
+            distance = math.acos(
+                math.sin(latitude1) * math.sin(latitude2) + math.cos(latitude1) * math.cos(latitude2) * math.cos(
+                    longitude2 - longitude1)) * 6371
             dic.update({
                 "distance": distance
             })
