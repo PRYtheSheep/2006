@@ -3,6 +3,7 @@ from sqlalchemy import text
 from . import db
 from flask_login import UserMixin
 from datetime import datetime
+import math
 
 
 class User(db.Model, UserMixin):
@@ -43,6 +44,8 @@ class Property(db.Model):
 
     @staticmethod
     def query(
+            inputlatitude,
+            inputlongitude,
             leaseTerm: list,
             rentLowerBound=0,
             rentUpperBound=10000,
@@ -55,12 +58,11 @@ class Property(db.Model):
             floorLevelLowerBound=1,
             floorLevelUpperBound=20,
             listDate="2019-01-01",
-            negotiable="no",
-            ):
+            negotiable="no"):
         """""""""
-            Queries the database by rent
-            Returns a list of dictionaries corresponding to each property that falls with the given ranges
-            """""""""
+        Queries the database by rent
+        Returns a list of dictionaries corresponding to each property that falls with the given ranges
+        """""""""
         column_names = Property.__table__.columns.keys()
 
         rentStatement = f"monthly_rent >= {rentLowerBound} AND monthly_rent <= {rentUpperBound} "
@@ -81,17 +83,29 @@ class Property(db.Model):
         for lstatement in leaseStatement:
             statement = statement + lstatement + "OR "
         statement = statement[:len(statement)-4]
-        print(statement)
 
         query = db.session.execute(text(statement)).fetchall()
 
         returnlist = []
         for row in query:
             dic = {}
+            latitude1, longitude1 = 0, 0
+
             for i, name in enumerate(column_names):
                 dic.update({
                     name: row[i]
                 })
+                if name == "latitude":
+                    latitude1 = float(row[i]) * (math.pi / 180)
+                if name == "longitude":
+                    longitude1 = float(row[i]) * (math.pi / 180)
+
+            latitude2, longitude2 = inputlatitude * (math.pi / 180), inputlongitude * (math.pi / 180)
+            distance = math.acos(math.sin(latitude1) * math.sin(latitude2) + math.cos(latitude1) * math.cos(latitude2) * math.cos(longitude2 - longitude1)) * 6371
+            dic.update({
+                "distance": distance
+            })
+
             returnlist.append(dic)
         return returnlist
 
