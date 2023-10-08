@@ -15,8 +15,8 @@ def login_account():
         user = models.User.query.filter_by(email=email).first()
         if user:
             if check_password_hash(user.password, password):
-                login_user(user, remember=True)
-                return redirect(url_for("views.landing_page"))
+                login_user(user)
+                return redirect(url_for("views.map_page"))
             else:
                 flash('Incorrect email or password', category='error')
         else:
@@ -39,7 +39,7 @@ def register_account():
         if user:
             flash("Email is already taken",category='error')
         else:
-            password = generate_password_hash(form.password.data) #123456789aA$
+            password = generate_password_hash(form.password.data) #123456789aA$ , 123456789aA$$
             username = email.split("@")[0]
             account_type = form.register_as.data
 

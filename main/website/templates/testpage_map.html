@@ -1,0 +1,179 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}OneMap: Default Map (XYZ){% endblock title %}
+
+{% block head_block %}
+<link rel="stylesheet" href="https://www.onemap.gov.sg/web-assets/libs/leaflet/leaflet.css" />
+<script src="https://www.onemap.gov.sg/web-assets/libs/leaflet/onemap-leaflet.js"></script>
+{% endblock head_block %}
+
+{% block content %}
+    {% from "includes/formhelper.html" import render_field %}
+    <div class="row">
+        <div class="col-md-4">
+            <form action="{{ url_for('views.map_page') }}" method="post">
+            {{ form.csrf_token }}
+            <div class="form-group">
+                {{ render_field(form.target_location, class_="form-control") }}
+            </div>
+            <div>
+                <input type="submit" class="btn btn-primary" value="Search">
+            </div>
+        </form>
+        {% if result_list %}
+        <form action="{{ url_for('views.map_page') }}" method="post">
+            {{ dynamic_form.csrf_token }}
+            <div class="form-group">
+              {{ render_field(dynamic_form.address, class_="form-control form-select") }}
+            </div>
+            <div>
+              <input type="submit" class="btn btn-primary" value="Select Address">
+            </div>
+        </form>
+        {% endif %}
+
+        </div>
+        <div id='mapdiv' style='height:800px;' class="col-md-8"></div>
+        <div id="map-container"></div>
+    </div>
+    <input type="hidden" id="properties_id" value="{{ property_list }}">
+    <input type="hidden" id="target_id" value="{{ target }}">
+    <div class="">
+
+    </div>
+{% endblock content %}
+
+{% block bottomScript %}
+
+<script>
+    let sw = L.latLng(1.144, 103.535);
+    let ne = L.latLng(1.494, 104.502);
+    let bounds = L.latLngBounds(sw, ne);
+
+    let map = L.map('mapdiv', {
+    center: L.latLng(1.2868108, 103.8545349),
+    zoom: 16
+    });
+
+    map.setMaxBounds(bounds);
+
+    let basemap = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default/{z}/{x}/{y}.png', {
+    detectRetina: true,
+    maxZoom: 19,
+    minZoom: 11,
+    /** DO NOT REMOVE the OneMap attribution below **/
+    attribution: '<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>'
+    });
+
+    basemap.addTo(map);
+</script>
+<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>
+
+<!-- Include the Google Maps API library -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0OhAg0vn0jn6qa19YHfq1bpaKcr16VtY&libraries=places&callback=initMap" async defer></script>
+<style>
+    #map-container {
+        width: 100%;
+        height: 90vh;
+        float: left;
+    }
+
+    #content-container {
+        width: 100%;
+        height: 100vh;
+        overflow: auto;
+    }
+</style>
+
+<script>
+    // This function will be called when the Google Maps API is loaded
+    function initMap() {
+        var get_target_id = JSON.parse("[" + document.querySelector('#target_id').value + "]")[0]
+        var get_properties = JSON.parse("[" + document.querySelector('#properties_id').value + "]")[0]
+        try{
+            var first_time = 0
+            var latitude = get_target_id[0]
+            var longitude = get_target_id[1]
+        } catch {
+            latitude = 1.290270
+            longitude = 103.851959
+            first_time = 1
+        }
+
+        var gmap = new google.maps.Map(document.getElementById('map-container'), {
+            center: { lat: latitude, lng: longitude},
+            zoom: 13
+        });
+
+        // Create a marker at the specified location
+        // var marker = new google.maps.Marker({
+        //     position: { lat: latitude, lng: longitude },
+        //     map: gmap,
+        //     title: 'Target Location' // Set a title for the marker
+        // }); 
+        if (first_time==0){
+            // Add multiple markers to map
+            var infoWindow = new google.maps.InfoWindow(), marker, i;
+
+            // Place each marker on the map 
+            for (i=0;i<get_properties.length;i++){
+                // addMarker({
+                //     lat:parseFloat(get_properties[i]["latitude"]),
+                //     lng:parseFloat(get_properties[i]["longitude"])},
+                //     get_properties[i],
+                //     gmap)
+                var address = get_properties[i]["block"] +" "+ get_properties[i]["street_name"] +" "+ get_properties[i]["building"]
+                marker = new google.maps.Marker({
+                    position: {
+                        lat:parseFloat(get_properties[i]["latitude"]),
+                        lng:parseFloat(get_properties[i]["longitude"])
+                    },
+                    map: gmap,
+                    title: address
+                });
+                
+                // Add info window to marker  
+                google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                    return function() {
+                        infoWindow.setContent(
+                            '<div class="gm-style-iw-d" style="overflow: scroll; max-height: 973px;">'+
+                                '<div dir="ltr" style="" jstcache="0">'+
+                                    '<div jstcache="34" class="poi-info-window gm-style">'+
+                                        '<div jstcache="2"> <div jstcache="3" class="title full-width" jsan="7.title,7.full-width">'+get_properties[i]['property_id']+'</div>'+
+                                            '<div class="address">'+
+                                                '<div jstcache="4" jsinstance="0" class="address-line full-width" jsan="7.address-line,7.full-width">'+address+'</div>'+
+                                                '<div jstcache="4" jsinstance="*1" class="address-line full-width" jsan="7.address-line,7.full-width">Singapore '+get_properties[i]['postal']+'</div>'+ 
+                                            '</div>'+
+                                        '</div>'+
+                                        '<div jstcache="5" style="display:none"></div>'+
+                                        '<div class="view-link">'+
+                                            '<a target="_blank" jstcache="6" href="map/'+get_properties[i]['property_id']+'" tabindex="0"> <span>View more</span> </a>'+ 
+                                        '</div>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'
+                            // "<div class='row'>" +
+                            // "<p>" + address + "</p>" +
+                            // "<a href='127.0.0.1:5000/map/"+address.replace(" ","_")+"'>Explore more</a>" +
+                            // "</div>"
+                        );
+                        infoWindow.open(gmap, marker);
+                    }
+                })(marker, i));
+            }
+        }
+
+            
+        function addMarker(location, property_info, map) {
+            new google.maps.Marker({
+                position: location,
+                map: map,
+                title: property_info["block"] + property_info["street_name"] + property_info["building"]
+            });
+        }
+    }
+
+
+    initMap();
+</script>
+{% endblock bottomScript %}

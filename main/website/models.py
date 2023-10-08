@@ -9,6 +9,8 @@ import math
 class User(db.Model, UserMixin):
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True)
+    first_name = db.Column(db.String(150))
+    last_name = db.Column(db.String(150))
     password = db.Column(db.String(150))
     username = db.Column(db.String(150))
     account_type = db.Column(db.String(150))
@@ -41,7 +43,8 @@ class Property(db.Model):
     lease_term = db.Column(db.String(10))
     negotiable_pricing = db.Column(db.String(3))
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
-    isApproved = db.Column(db.Boolean)
+    is_approved = db.Column(db.Boolean)
+    is_visible = db.Column(db.Boolean)
 
     @staticmethod
     def query(
@@ -71,7 +74,7 @@ class Property(db.Model):
         numBedStatement = f"number_of_bedrooms >= {numBedLowerBound} AND number_of_bedrooms <= {numBedUpperBound} "
         yearStatement = f"year_built >= {yearLowerBound} AND year_built <= {yearUpperBound} "
         floorStatement = f"floor_level >= {floorLevelLowerBound} AND floor_level <= {floorLevelUpperBound} "
-        isApprovedStatement = "isApproved = true"
+        is_approvedStatement = "is_approved = true"
 
         leaseStatement = []
         for lease in leaseTerm:
@@ -81,7 +84,7 @@ class Property(db.Model):
         dateStatement = f"rent_approval_date > '{listDate}' "
         negotiableStatement = f"negotiable_pricing = '{negotiable}' "
 
-        statement = f"SELECT * from property WHERE " + rentStatement + "AND " + pricePSMStatement + "AND " + numBedStatement + "AND " + yearStatement + "AND " + floorStatement + "AND " + dateStatement + "AND " + negotiableStatement + "AND " + isApprovedStatement + " AND "
+        statement = f"SELECT * from property WHERE " + rentStatement + "AND " + pricePSMStatement + "AND " + numBedStatement + "AND " + yearStatement + "AND " + floorStatement + "AND " + dateStatement + "AND " + negotiableStatement + "AND " + is_approvedStatement + " AND "
         for lstatement in leaseStatement:
             statement = statement + lstatement + "OR "
         statement = statement[:len(statement) - 4]
@@ -95,7 +98,7 @@ class Property(db.Model):
 
             for i, name in enumerate(column_names):
 
-                if name == "isApproved" and row[i] == 0:
+                if name == "is_approved" and row[i] == 0:
                     continue  # property not yet approved, skip it
 
                 dic.update({

@@ -9,6 +9,8 @@ from wtforms import Form, StringField, IntegerField, PasswordField, validators, 
 
 
 class RegistrationForm(FlaskForm):
+    first_name = StringField('First Name', [validators.DataRequired()])
+    last_name = StringField('Last Name', [validators.DataRequired()])
     email = StringField('Email Address', [validators.Email(),
                                           validators.DataRequired()])
     password = PasswordField('Password', [
@@ -66,3 +68,26 @@ class RegisterPropertyForm(FlaskForm):
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
+
+
+class AccountSettingsForm(FlaskForm):
+    username = StringField('Username', [validators.DataRequired()])
+    password = PasswordField('Password', [validators.DataRequired()])
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', [validators.DataRequired()])
+    new_password = PasswordField('New Password', [
+    validators.Length(min=12, max=18),
+    validators.DataRequired(),
+    validators.EqualTo('confirm_new_password', message='Passwords must match.'),
+    validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
+                        ,
+                        message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
+    ])
+    confirm_new_password = PasswordField('Confirm New Password', [validators.DataRequired()])
+
+class TargetLocationForm(FlaskForm):
+    target_location = StringField("Target Location", [validators.DataRequired()])
+
+class DynamicForm(FlaskForm):
+    address = SelectField('', choices=[], validate_choice=False)

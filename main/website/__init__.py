@@ -10,6 +10,7 @@ def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret_key'
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://root:password@localhost/{DB_NAME}"
+    
     db.init_app(app)
 
     from .routers.auth import auth

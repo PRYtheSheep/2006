@@ -5,9 +5,10 @@ from .. import forms, email_sender, db
 from ..models import User, Property, PropertyFavourites, AccountRecovery
 from datetime import datetime
 import uuid
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash,  check_password_hash
 from urllib.parse import urlparse 
-
+import requests
+import json
 
 views = Blueprint('views',__name__)
 
@@ -15,10 +16,67 @@ views = Blueprint('views',__name__)
 def landing_page():
     return render_template("homepage.html", user=current_user)
 
-@views.route("/map")
+@views.route("/map", methods=['GET','POST'])
 @login_required
 def map_page():
-    return render_template("homepage.html", user=current_user) # temp
+    result_list, property_list = [], []
+    form = forms.TargetLocationForm()
+    dynamic_form = forms.DynamicForm()
+    if form.validate_on_submit():
+        target_location = form.target_location.data
+        url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum=1".format(
+            target_location #639798 
+        )
+        response = requests.request("GET", url)
+        data = response.json()
+        pages = data['totalNumPages']
+
+        for item in data['results']:
+            result_list.append((item['ADDRESS'],item['ADDRESS']))
+        #print(result_list)
+
+        for i in range(2,pages+1):
+            url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum={}".format(
+                target_location,
+                i
+            )
+            response = requests.request("GET", url)
+            data = response.json()
+            for item in data['results']:
+                result_list.append((item['ADDRESS'],item['ADDRESS']))
+
+        dynamic_form.address.choices = result_list
+        
+        return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list, dynamic_form=dynamic_form)
+    
+    elif dynamic_form.validate_on_submit():
+        target_location = dynamic_form.address.data
+        url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
+            target_location
+        )
+        response = requests.request("GET", url)
+        data = response.json()
+        address_details = data['results'][0]
+        #print(address_details)
+
+        # query into db for properties
+        property_list = Property.query(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), []) 
+        print(len(property_list))
+        #print(property_list[0]['distance'])
+        filtered = json.dumps(list(filter(lambda num: num['distance']<10, property_list)),indent=2,default=str)
+        print(len(filtered))
+        return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list, dynamic_form=dynamic_form, property_list=filtered, target = [float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
+    
+    return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list, dynamic_form=dynamic_form)
+
+    
+    
+@views.route("/map/<int:property_id>", methods=['GET','POST'])
+@login_required
+def map_page_info(property_id=None):
+    return render_template("homepage.html", user=current_user, property_id=property_id)
+
+
 
 @views.route("/admin")
 @login_required
@@ -87,3 +145,47 @@ def forget_password(reset_id):
             flash("Password changed successfully")
             return redirect(url_for("auth.login_account"))
     return render_template("forget_password_change.html", user=current_user, form=form, reset_id=reset_id)
+
+@views.route('/settings')
+@views.route('/settings/<string:setting_type>', methods=["GET","POST"])
+@login_required
+def account_settings(setting_type=None):
+    if not setting_type:
+        return render_template("account_settings.html", user=current_user, setting_type=setting_type)
+    else:
+        if setting_type == 'account':
+            form = forms.AccountSettingsForm()
+            if form.validate_on_submit():
+                if check_password_hash(current_user.password, form.password.data):
+                    user = User.query.filter_by(user_id=current_user.user_id).first()
+                    user.username = form.username.data
+
+                    db.session.commit()
+                    current_user.username = form.username.data     
+                                  
+                    flash("Account Information Changed Successfully",'success')
+                    return redirect(url_for('views.account_settings'))
+                else:
+                    flash("Password entered is wrong",'error')
+                    return redirect(url_for('views.account_settings', setting_type='account'))
+            return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form) 
+        elif setting_type == 'password':
+            form = forms.ChangePasswordForm()
+            if form.validate_on_submit():
+                if check_password_hash(current_user.password, form.current_password.data):
+                    user = User.query.filter_by(user_id=current_user.user_id).first()
+                    new_password = generate_password_hash(form.new_password.data)
+                    user.password = new_password
+
+                    db.session.commit()
+                    current_user.password = new_password
+
+                    flash("Your password is successfully updated.",'success')
+                    return redirect(url_for('views.account_settings'))
+                else:
+                    flash("Current Password is wrong",'error')
+                    return redirect(url_for('views.account_settings', setting_type='password'))
+            return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
+        else:
+            return render_template("404.html", user=current_user)
+        
