@@ -221,7 +221,8 @@ def allowed_file(filename, allowed_extensions):
 APPROVAL_FORM_FOLDER = 'main/website/storage/approval_documents'
 IMAGE_FOLDER = 'main/website/storage/property_images'
 
-
+@login_required
+@landlord_required
 @views.route("/registerproperty", methods=["GET", "POST"])
 def register_property():
     form = forms.RegisterPropertyForm()
