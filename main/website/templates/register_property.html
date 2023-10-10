@@ -1,0 +1,76 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Register{% endblock title %}
+
+{% block content %}
+  {% from "includes/formhelper.html" import render_field %}
+    {% if form.errors %}
+        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+            {% for error in field_errors %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ form[field_name].label }}: {{ error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+        {% endfor %}
+  {% endif %}
+  <div class="row">
+      <div class="col-md-8">
+          <form action="{{ url_for('auth.register_property') }}" method="post">
+            {{ form.csrf_token }}
+            <div class="form-group">
+              {{ render_field(form.town, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.block, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.street_name, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.flat_type, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.monthly_rent, class_="form-control") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.postal_code, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.num_bedrooms, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.floor_size, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.year_built, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.furnishing, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.floor_level, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.lease_term, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.negotiable, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.image, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+              {{ render_field(form.approval_form, class_="form-control form-select") }}
+            </div>
+            <div>
+              <input type="submit" class="btn btn-primary" value="Register">
+            </div>
+        </form>
+      </div>
+  </div>
+{% endblock content %}
+
+{% block bottomScript %}
+<!--<script src='https://www.google.com/recaptcha/api.js' async defer></script>-->
+{% endblock bottomScript %}

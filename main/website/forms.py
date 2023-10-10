@@ -69,6 +69,10 @@ class RegisterPropertyForm(FlaskForm):
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
 
+    # ask for images and approval form
+    image = FileField([validators.DataRequired])
+    approval_form = FileField([validators.DataRequired])
+
 
 class AccountSettingsForm(FlaskForm):
     username = StringField('Username', [validators.DataRequired()])

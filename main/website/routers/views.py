@@ -1,22 +1,35 @@
+import os.path
+
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
+
 from .custom_decorators import admin_required, landlord_required
 from .. import forms, email_sender, db
 from ..models import User, Property, PropertyFavourites, AccountRecovery
 from datetime import datetime
 import uuid
-from werkzeug.security import generate_password_hash,  check_password_hash
-from urllib.parse import urlparse 
+from werkzeug.security import generate_password_hash, check_password_hash
+from urllib.parse import urlparse
 import requests
 import json
 
-views = Blueprint('views',__name__)
+views = Blueprint('views', __name__)
+
+app = None
+
+
+def set_app(app1):
+    global app
+    app = app1
+
 
 @views.route("/")
 def landing_page():
     return render_template("homepage.html", user=current_user)
 
-@views.route("/map", methods=['GET','POST'])
+
+@views.route("/map", methods=['GET', 'POST'])
 @login_required
 def map_page():
     result_list, property_list = [], []
@@ -25,17 +38,17 @@ def map_page():
     if form.validate_on_submit():
         target_location = form.target_location.data
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum=1".format(
-            target_location #639798 
+            target_location  # 639798
         )
         response = requests.request("GET", url)
         data = response.json()
         pages = data['totalNumPages']
 
         for item in data['results']:
-            result_list.append((item['ADDRESS'],item['ADDRESS']))
-        #print(result_list)
+            result_list.append((item['ADDRESS'], item['ADDRESS']))
+        # print(result_list)
 
-        for i in range(2,pages+1):
+        for i in range(2, pages + 1):
             url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum={}".format(
                 target_location,
                 i
@@ -43,12 +56,13 @@ def map_page():
             response = requests.request("GET", url)
             data = response.json()
             for item in data['results']:
-                result_list.append((item['ADDRESS'],item['ADDRESS']))
+                result_list.append((item['ADDRESS'], item['ADDRESS']))
 
         dynamic_form.address.choices = result_list
-        
-        return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list, dynamic_form=dynamic_form)
-    
+
+        return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
+                               dynamic_form=dynamic_form)
+
     elif dynamic_form.validate_on_submit():
         target_location = dynamic_form.address.data
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
@@ -57,34 +71,36 @@ def map_page():
         response = requests.request("GET", url)
         data = response.json()
         address_details = data['results'][0]
-        #print(address_details)
+        # print(address_details)
 
         # query into db for properties
-        property_list = Property.query(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), []) 
+        property_list = Property.query(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
         print(len(property_list))
-        #print(property_list[0]['distance'])
-        filtered = json.dumps(list(filter(lambda num: num['distance']<10, property_list)),indent=2,default=str)
+        # print(property_list[0]['distance'])
+        filtered = json.dumps(list(filter(lambda num: num['distance'] < 10, property_list)), indent=2, default=str)
         print(len(filtered))
-        return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list, dynamic_form=dynamic_form, property_list=filtered, target = [float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
-    
-    return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list, dynamic_form=dynamic_form)
+        return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
+                               dynamic_form=dynamic_form, property_list=filtered,
+                               target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
 
-    
-    
-@views.route("/map/<int:property_id>", methods=['GET','POST'])
+    return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
+                           dynamic_form=dynamic_form)
+
+
+@views.route("/map/<int:property_id>", methods=['GET', 'POST'])
 @login_required
 def map_page_info(property_id=None):
     return render_template("homepage.html", user=current_user, property_id=property_id)
-
 
 
 @views.route("/admin")
 @login_required
 @admin_required
 def admin_panel():
-    return render_template("homepage.html", user=current_user) # temp
+    return render_template("homepage.html", user=current_user)  # temp
 
-@views.route('/forgetpassword', methods=['GET','POST'])
+
+@views.route('/forgetpassword', methods=['GET', 'POST'])
 def forget_password_request():
     form = forms.ForgetPasswordForm()
     if form.validate_on_submit():
@@ -95,41 +111,43 @@ def forget_password_request():
             user_id = user.user_id
             account_recovery = AccountRecovery.query.filter_by(user_id=user_id).first()
 
-            if account_recovery and ((datetime.now()-account_recovery.created_at).seconds/60<5): # user requested a reset in the last 5 minutes
-                flash("You have requested a password reset in the last 5 minutes. Please try again later.",'error')
+            if account_recovery and ((
+                                             datetime.now() - account_recovery.created_at).seconds / 60 < 5):  # user requested a reset in the last 5 minutes
+                flash("You have requested a password reset in the last 5 minutes. Please try again later.", 'error')
             else:
                 u = str(uuid.uuid4())
-                #u = 218b7a1c-fa21-4e7b-9cfd-2d05e939ac28 # for testing purposes
+                # u = 218b7a1c-fa21-4e7b-9cfd-2d05e939ac28 # for testing purposes
                 email_content = f"Password reset link: {request.url_root}/forgetpassword/{u}"
                 email_sender.send_email(email, "Password Reset Request", email_content)
 
-                if not account_recovery: # first time resetting password
+                if not account_recovery:  # first time resetting password
                     new_ar = AccountRecovery(user_id=user_id,
                                              recovery_string=u)
                     db.session.add(new_ar)
                 else:
                     account_recovery.recovery_string = u
                     account_recovery.created_at = datetime.now()
-                    
+
                 db.session.commit()
 
-                flash("A password reset link has been sent to your email",'success')
-            
+                flash("A password reset link has been sent to your email", 'success')
+
             return redirect(url_for("auth.login_account"))
         else:
-            flash("There are no accounts with this email",'error')
+            flash("There are no accounts with this email", 'error')
             return redirect(url_for("views.forget_password_request"))
     return render_template("forget_password.html", user=current_user, form=form)
 
-@views.route('/forgetpassword/<uuid:reset_id>', methods=["GET","POST"])
+
+@views.route('/forgetpassword/<uuid:reset_id>', methods=["GET", "POST"])
 def forget_password(reset_id):
     account_recovery = AccountRecovery.query.filter_by(recovery_string=str(reset_id)).first()
     if not account_recovery:
-        flash("No such password request exist",'error')
+        flash("No such password request exist", 'error')
         return redirect(url_for("views.forget_password_request"))
-    elif ((datetime.now()-account_recovery.created_at).seconds/60<15): # link expired, more than 15 mins
-            flash("Password reset link has expired",'error')
-            return redirect(url_for("views.forget_password_request"))
+    elif ((datetime.now() - account_recovery.created_at).seconds / 60 < 15):  # link expired, more than 15 mins
+        flash("Password reset link has expired", 'error')
+        return redirect(url_for("views.forget_password_request"))
     else:
         form = forms.ChangeForgetPasswordForm()
         if form.validate_on_submit():
@@ -146,8 +164,9 @@ def forget_password(reset_id):
             return redirect(url_for("auth.login_account"))
     return render_template("forget_password_change.html", user=current_user, form=form, reset_id=reset_id)
 
+
 @views.route('/settings')
-@views.route('/settings/<string:setting_type>', methods=["GET","POST"])
+@views.route('/settings/<string:setting_type>', methods=["GET", "POST"])
 @login_required
 def account_settings(setting_type=None):
     if not setting_type:
@@ -161,14 +180,14 @@ def account_settings(setting_type=None):
                     user.username = form.username.data
 
                     db.session.commit()
-                    current_user.username = form.username.data     
-                                  
-                    flash("Account Information Changed Successfully",'success')
+                    current_user.username = form.username.data
+
+                    flash("Account Information Changed Successfully", 'success')
                     return redirect(url_for('views.account_settings'))
                 else:
-                    flash("Password entered is wrong",'error')
+                    flash("Password entered is wrong", 'error')
                     return redirect(url_for('views.account_settings', setting_type='account'))
-            return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form) 
+            return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
         elif setting_type == 'password':
             form = forms.ChangePasswordForm()
             if form.validate_on_submit():
@@ -180,12 +199,52 @@ def account_settings(setting_type=None):
                     db.session.commit()
                     current_user.password = new_password
 
-                    flash("Your password is successfully updated.",'success')
+                    flash("Your password is successfully updated.", 'success')
                     return redirect(url_for('views.account_settings'))
                 else:
-                    flash("Current Password is wrong",'error')
+                    flash("Current Password is wrong", 'error')
                     return redirect(url_for('views.account_settings', setting_type='password'))
             return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
         else:
             return render_template("404.html", user=current_user)
-        
+
+
+APPROVAL_FORM_ALLOWED_EXTENSIONS = {"pdf"}
+IMAGES_ALLOWED_EXTENSIONS = {"png"}
+
+
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+
+APPROVAL_FORM_FOLDER = 'main/website/storage/approval_documents'
+IMAGE_FOLDER = 'main/website/storage/property_images'
+
+
+@views.route("/registerproperty", methods=["GET", "POST"])
+def register_property():
+    form = forms.RegisterPropertyForm()
+
+    if form.validate_on_submit():
+        # check if the approval form is the correct type
+        approval_form_filename = secure_filename(form.approval_form.name)
+        if approval_form_filename == "":  # no file selected so name is empty
+            flash("No file selected", 'error')
+        if not allowed_file(approval_form_filename, APPROVAL_FORM_ALLOWED_EXTENSIONS):
+            flash("Invalid file type, only .pdf file extensions are allowed", 'error')
+
+        # check if the image is the correct type
+        image_filename = secure_filename(form.image.name)
+        if image_filename == "":  # no file selected so name is empty
+            flash("No file selected", 'error')
+        if not allowed_file(image_filename, IMAGES_ALLOWED_EXTENSIONS):
+            flash("Invalid file type, only .png file extensions are allowed", 'error')
+
+        # save the image and approval form to the respective folder
+        app.config['UPLOAD_FOLDER'] = APPROVAL_FORM_FOLDER
+        approval_form_file_path = os.path.join(app.config['UPLOAD_FOLDER'], approval_form_filename)
+        print(form.approval_form.data)
+
+    # tentative return page
+    return redirect(url_for('views.account_settings'))
