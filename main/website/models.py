@@ -120,6 +120,11 @@ class Property(db.Model):
             returnlist.append(dic)
         return returnlist
 
+    @staticmethod
+    def approve_property(prop_id):
+        statement = f"UPDATE property SET is_approved = TRUE WHERE property_id = {prop_id}"
+        db.session.execute(text(statement))
+        db.session.commit()
 
 class PropertyFavourites(db.Model):
     pf_id = db.Column(db.Integer, primary_key=True)
