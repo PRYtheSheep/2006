@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from .custom_decorators import admin_required, landlord_required
-from .. import forms, email_sender, db
+from .. import forms, email_sender, db, models
 from ..models import User, Property, PropertyFavourites, AccountRecovery
 from datetime import datetime
 import uuid
@@ -252,6 +252,30 @@ def register_property():
         if not allowed_file(image.filename, IMAGES_ALLOWED_EXTENSIONS):
             flash("Invalid image file type, only .png files are allowed", "error")
             return render_template("register_property.html", user=current_user, form=form)
+
+        new_property = models.Property(rent_approval_date=form.rent_approval_date.data,
+                                       town=form.town.data,
+                                       block=form.block.data,
+                                       street_name=form.street_name.data,
+                                       flat_type=form.flat_type.data,
+                                       monthly_rent=form.monthly_rent.data,
+                                       postal=form.postal_code.data,
+                                       latitude=0,  # placeholder value
+                                       longitude=0,  # placeholder value
+                                       building=form.building.data,
+                                       number_of_bedrooms=form.num_bedrooms.data,
+                                       floorsize=form.floor_size.data,
+                                       price_per_square_metre=round(form.monthly_rent.data/form.floor_size.data, 6),
+                                       year_built=form.year_built.data,
+                                       floor_level=form.floor_level.data,
+                                       furnishing=form.furnishing.data,
+                                       lease_term=form.lease_term.data,
+                                       negotiable_pricing=form.negotiable.data,
+                                       user_id=current_user.user_id,
+                                       is_approved=False,
+                                       is_visible=True)
+        db.session.add(new_property)
+        db.session.commit()
 
         # save the approval form to the respective folder
         app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
