@@ -218,8 +218,9 @@ def allowed_file(filename, allowed_extensions):
            filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
-APPROVAL_FORM_FOLDER = 'main/website/storage/approval_documents'
-IMAGE_FOLDER = 'main/website/storage/property_images'
+APPROVAL_FORM_FOLDER = 'website/storage/approval_documents'
+IMAGE_FOLDER = 'website/storage/property_images'
+
 
 @login_required
 @landlord_required
@@ -229,23 +230,39 @@ def register_property():
 
     if form.validate_on_submit():
         # check if the approval form is the correct type
-        approval_form_filename = secure_filename(form.approval_form.name)
-        if approval_form_filename == "":  # no file selected so name is empty
-            flash("No file selected", 'error')
-        if not allowed_file(approval_form_filename, APPROVAL_FORM_ALLOWED_EXTENSIONS):
-            flash("Invalid file type, only .pdf file extensions are allowed", 'error')
+        approval_form_filename = secure_filename(form.approval_form.name)  # get the file name from the form
+        approval = request.files[approval_form_filename]  # get the filestorage object
 
-        # check if the image is the correct type
+        if approval.filename == "":  # empty file name, no file selected
+            flash("No approval file selected", "error")
+            return render_template("register_property.html", user=current_user, form=form)
+
+        if not allowed_file(approval.filename, APPROVAL_FORM_ALLOWED_EXTENSIONS):  # check if file is pdf type
+            flash("Invalid approval file type, only .pdf files are allowed", "error")
+            return render_template("register_property.html", user=current_user, form=form)
+
+        # do the same check for image
         image_filename = secure_filename(form.image.name)
-        if image_filename == "":  # no file selected so name is empty
-            flash("No file selected", 'error')
-        if not allowed_file(image_filename, IMAGES_ALLOWED_EXTENSIONS):
-            flash("Invalid file type, only .png file extensions are allowed", 'error')
+        image = request.files[image_filename]
 
-        # save the image and approval form to the respective folder
-        app.config['UPLOAD_FOLDER'] = APPROVAL_FORM_FOLDER
-        approval_form_file_path = os.path.join(app.config['UPLOAD_FOLDER'], approval_form_filename)
-        print(form.approval_form.data)
+        if approval.filename == "":  # empty file name, no file selected
+            flash("No image selected", "error")
+            return render_template("register_property.html", user=current_user, form=form)
+
+        if not allowed_file(image.filename, IMAGES_ALLOWED_EXTENSIONS):
+            flash("Invalid image file type, only .png files are allowed", "error")
+            return render_template("register_property.html", user=current_user, form=form)
+
+        # save the approval form to the respective folder
+        app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
+        approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], approval.filename)
+        approval.save(approval_form_file_path)
+
+        # save the image to the respective folder
+        app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
+        image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], image.filename)
+        image.save(image_file_path)
 
     # tentative return page
-    return redirect(url_for('views.account_settings'))
+    flash("Placeholder success message", "success")
+    return render_template("register_property.html", user=current_user, form=form)
