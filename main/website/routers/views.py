@@ -35,6 +35,7 @@ def map_page():
     result_list, property_list = [], []
     form = forms.TargetLocationForm()
     dynamic_form = forms.DynamicForm()
+    target = [1.369635, 103.803680] # middle of sg coords
     if form.validate_on_submit():
         target_location = form.target_location.data
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum=1".format(
@@ -61,7 +62,8 @@ def map_page():
         dynamic_form.address.choices = result_list
 
         return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
-                               dynamic_form=dynamic_form)
+                               dynamic_form=dynamic_form,property_list=property_list,
+                               target=target)
 
     elif dynamic_form.validate_on_submit():
         target_location = dynamic_form.address.data
@@ -75,16 +77,18 @@ def map_page():
 
         # query into db for properties
         property_list = Property.query(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
-        print(len(property_list))
+        #print(len(property_list))
         # print(property_list[0]['distance'])
-        filtered = json.dumps(list(filter(lambda num: num['distance'] < 10, property_list)), indent=2, default=str)
-        print(len(filtered))
+        filtered = list(filter(lambda num: num['distance'] < 10, property_list)) # right now its filtered to properties less than 10km from selected location
+        #print(len(filtered))
+        #print(filtered)
         return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
                                dynamic_form=dynamic_form, property_list=filtered,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
 
     return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
-                           dynamic_form=dynamic_form)
+                           dynamic_form=dynamic_form,property_list=property_list,
+                               target=target)
 
 
 @views.route("/map/<int:property_id>", methods=['GET', 'POST'])

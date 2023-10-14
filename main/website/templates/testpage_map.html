@@ -1,10 +1,26 @@
 {% extends "includes/layout.html" %}
 
-{% block title %}OneMap: Default Map (XYZ){% endblock title %}
+{% block title %}Map Page{% endblock title %}
 
 {% block head_block %}
 <link rel="stylesheet" href="https://www.onemap.gov.sg/web-assets/libs/leaflet/leaflet.css" />
 <script src="https://www.onemap.gov.sg/web-assets/libs/leaflet/onemap-leaflet.js"></script>
+<!-- Include the Google Maps API library -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0OhAg0vn0jn6qa19YHfq1bpaKcr16VtY&libraries=places&callback=initMap" async defer></script>
+<style>
+    #map-container {
+        width: 100%;
+        height: 90vh;
+        float: left;
+    }
+
+    #content-container {
+        width: 100%;
+        height: 100vh;
+        overflow: auto;
+    }
+</style>
+
 {% endblock head_block %}
 
 {% block content %}
@@ -31,149 +47,145 @@
             </div>
         </form>
         {% endif %}
-
         </div>
-        <div id='mapdiv' style='height:800px;' class="col-md-8"></div>
+        <div id="propertyFound"></div>
         <div id="map-container"></div>
-    </div>
-    <input type="hidden" id="properties_id" value="{{ property_list }}">
-    <input type="hidden" id="target_id" value="{{ target }}">
-    <div class="">
-
     </div>
 {% endblock content %}
 
 {% block bottomScript %}
-
 <script>
-    let sw = L.latLng(1.144, 103.535);
-    let ne = L.latLng(1.494, 104.502);
-    let bounds = L.latLngBounds(sw, ne);
-
-    let map = L.map('mapdiv', {
-    center: L.latLng(1.2868108, 103.8545349),
-    zoom: 16
-    });
-
-    map.setMaxBounds(bounds);
-
-    let basemap = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Default/{z}/{x}/{y}.png', {
-    detectRetina: true,
-    maxZoom: 19,
-    minZoom: 11,
-    /** DO NOT REMOVE the OneMap attribution below **/
-    attribution: '<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>'
-    });
-
-    basemap.addTo(map);
-</script>
-<img src="https://www.onemap.gov.sg/web-assets/images/logo/om_logo.png" style="height:20px;width:20px;"/>&nbsp;<a href="https://www.onemap.gov.sg/" target="_blank" rel="noopener noreferrer">OneMap</a>&nbsp;&copy;&nbsp;contributors&nbsp;&#124;&nbsp;<a href="https://www.sla.gov.sg/" target="_blank" rel="noopener noreferrer">Singapore Land Authority</a>
-
-<!-- Include the Google Maps API library -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0OhAg0vn0jn6qa19YHfq1bpaKcr16VtY&libraries=places&callback=initMap" async defer></script>
-<style>
-    #map-container {
-        width: 100%;
-        height: 90vh;
-        float: left;
-    }
-
-    #content-container {
-        width: 100%;
-        height: 100vh;
-        overflow: auto;
-    }
-</style>
-
-<script>
-    // This function will be called when the Google Maps API is loaded
-    function initMap() {
-        var get_target_id = JSON.parse("[" + document.querySelector('#target_id').value + "]")[0]
-        var get_properties = JSON.parse("[" + document.querySelector('#properties_id').value + "]")[0]
-        try{
-            var first_time = 0
-            var latitude = get_target_id[0]
-            var longitude = get_target_id[1]
-        } catch {
-            latitude = 1.290270
-            longitude = 103.851959
-            first_time = 1
-        }
-
+    async function initMap() {
+        var target = {{ target|tojson }} 
+        var properties = {{ property_list|tojson }} 
+        
         var gmap = new google.maps.Map(document.getElementById('map-container'), {
-            center: { lat: latitude, lng: longitude},
+            center: { lat: 1.369635, lng: 103.803680}, // center of singapore, default values 
             zoom: 13
         });
 
-        // Create a marker at the specified location
-        // var marker = new google.maps.Marker({
-        //     position: { lat: latitude, lng: longitude },
-        //     map: gmap,
-        //     title: 'Target Location' // Set a title for the marker
-        // }); 
-        if (first_time==0){
+        // user has selected a target location
+        if (target[0] != 1.369635){ // checks if latitude is not default
+            document.getElementById("propertyFound")
+            .appendChild(document.createTextNode("{{ property_list|length }} properties found")) 
+
+            // to check if properties have the same lat/long later on
+            const sameCoord = []
+
             // Add multiple markers to map
             var infoWindow = new google.maps.InfoWindow(), marker, i;
+            
+            // Marker for selected location
+            var marker = new google.maps.Marker({
+                position: { lat: target[0], lng: target[1] },
+                map: gmap,
+                title: 'Selected Location'
+            }); 
+            
+            sameCoord.push([target[0],target[1]])
 
-            // Place each marker on the map 
-            for (i=0;i<get_properties.length;i++){
-                // addMarker({
-                //     lat:parseFloat(get_properties[i]["latitude"]),
-                //     lng:parseFloat(get_properties[i]["longitude"])},
-                //     get_properties[i],
-                //     gmap)
-                var address = get_properties[i]["block"] +" "+ get_properties[i]["street_name"] +" "+ get_properties[i]["building"]
+            // Infowindow for selected location
+            google.maps.event.addListener(marker, 'click', (function(marker) {
+                return function() {
+                    infoWindow.setContent(
+                        '<div class="gm-style-iw-d" style="overflow: scroll; max-height: 973px;">'+
+                            '<div dir="ltr" style="" jstcache="0">'+
+                                '<div jstcache="34" class="poi-info-window gm-style">'+
+                                    '<div jstcache="2"> <div jstcache="3" class="title full-width" jsan="7.title,7.full-width">Selected Location</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>'
+                    );
+                    infoWindow.open(gmap, marker);
+                }
+            })(marker));
+            
+            // Markers for queried properties
+            for (i=0;i<properties.length;i++){
+                // actually it wasnt a rate limit issue but more of the same coordinate issue preventing locations with the same coordinates to be added
+                // still a good way to not immediately place 3000+ markers onto the map i guess?
+                // if (i%49==0){ // delay because google maps rate limits at 50 reqs per second
+                //     await delay(2000).then(() => console.log('prevent rate limits'));
+                // }
+
+                var currLat = parseFloat(properties[i]["latitude"])
+                var currLng = parseFloat(properties[i]["longitude"])
+
+                const found = sameCoord.some(r=>[currLat, currLng].indexOf(r) >=0)
+                //console.log(found+properties[i]["block"])
+
+                if (found){
+                    var newCoord = getNewCoord(currLat,currLng)
+                    currLat = newCoord[0]
+                    currLng = newCoord[1]
+                }
+
+                sameCoord.push(currLat,currLng)
+                //console.log(currLat,currLng)
+                var address = properties[i]["block"] +" "+ properties[i]["street_name"] +" "+ properties[i]["building"]
                 marker = new google.maps.Marker({
                     position: {
-                        lat:parseFloat(get_properties[i]["latitude"]),
-                        lng:parseFloat(get_properties[i]["longitude"])
+                        lat:currLat,
+                        lng:currLng
                     },
                     map: gmap,
                     title: address
                 });
                 
-                // Add info window to marker  
+                // Add info window to markers  
                 google.maps.event.addListener(marker, 'click', (function(marker, i) {
                     return function() {
                         infoWindow.setContent(
                             '<div class="gm-style-iw-d" style="overflow: scroll; max-height: 973px;">'+
                                 '<div dir="ltr" style="" jstcache="0">'+
                                     '<div jstcache="34" class="poi-info-window gm-style">'+
-                                        '<div jstcache="2"> <div jstcache="3" class="title full-width" jsan="7.title,7.full-width">'+get_properties[i]['property_id']+'</div>'+
+                                        '<div jstcache="2"> <div jstcache="3" class="title full-width" jsan="7.title,7.full-width">'+properties[i]['property_id']+'</div>'+
                                             '<div class="address">'+
                                                 '<div jstcache="4" jsinstance="0" class="address-line full-width" jsan="7.address-line,7.full-width">'+address+'</div>'+
-                                                '<div jstcache="4" jsinstance="*1" class="address-line full-width" jsan="7.address-line,7.full-width">Singapore '+get_properties[i]['postal']+'</div>'+ 
+                                                '<div jstcache="4" jsinstance="*1" class="address-line full-width" jsan="7.address-line,7.full-width">Singapore '+properties[i]['postal']+'</div>'+ 
                                             '</div>'+
                                         '</div>'+
                                         '<div jstcache="5" style="display:none"></div>'+
                                         '<div class="view-link">'+
-                                            '<a target="_blank" jstcache="6" href="map/'+get_properties[i]['property_id']+'" tabindex="0"> <span>View more</span> </a>'+ 
+                                            '<a target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'" tabindex="0"> <span>View more</span> </a>'+ 
                                         '</div>'+
                                     '</div>'+
                                 '</div>'+
                             '</div>'
-                            // "<div class='row'>" +
-                            // "<p>" + address + "</p>" +
-                            // "<a href='127.0.0.1:5000/map/"+address.replace(" ","_")+"'>Explore more</a>" +
-                            // "</div>"
                         );
                         infoWindow.open(gmap, marker);
                     }
                 })(marker, i));
             }
         }
+    }
+    // initialize map
+    initMap();
 
-            
-        function addMarker(location, property_info, map) {
-            new google.maps.Marker({
-                position: location,
-                map: map,
-                title: property_info["block"] + property_info["street_name"] + property_info["building"]
-            });
-        }
+    function delay(time) {
+        return new Promise(resolve => setTimeout(resolve, time));
     }
 
+    function getNewCoord(lat,lng){
+        //Earth’s radius
+        var R = 6378137.0;
+        
+        //offsets in meters (random values between 3 and 5)
+        var DistanceNorth = Math.floor(Math.random() * (5 - 3 + 1) + 3);
+        var DistanceEast = Math.floor(Math.random() * (5 - 3 + 1) + 3);
+        
+        
+        //Coordinate offsets in radians
+        var dLat = DistanceNorth / R;
+        var dLon = DistanceEast / (R * Math.cos(Math.PI * lat / 180));
+        
+        
+        //New coordinates
+        var NewLat = lat + dLat * 180 / Math.PI;
+        var NewLng = lng + dLon * 180 / Math.PI;
 
-    initMap();
+        return [NewLat,NewLng]
+    }
+
 </script>
 {% endblock bottomScript %}
