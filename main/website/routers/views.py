@@ -1,6 +1,6 @@
 import os.path
 
-from flask import Blueprint, render_template, url_for, flash, redirect, request
+from flask import Blueprint, render_template, url_for, flash, redirect, request, send_from_directory
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
@@ -35,7 +35,7 @@ def map_page():
     result_list, property_list = [], []
     form = forms.TargetLocationForm()
     dynamic_form = forms.DynamicForm()
-    target = [1.369635, 103.803680] # middle of sg coords
+    target = [1.369635, 103.803680]  # middle of sg coords
     if form.validate_on_submit():
         target_location = form.target_location.data
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum=1".format(
@@ -62,7 +62,7 @@ def map_page():
         dynamic_form.address.choices = result_list
 
         return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
-                               dynamic_form=dynamic_form,property_list=property_list,
+                               dynamic_form=dynamic_form, property_list=property_list,
                                target=target)
 
     elif dynamic_form.validate_on_submit():
@@ -77,18 +77,19 @@ def map_page():
 
         # query into db for properties
         property_list = Property.query(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
-        #print(len(property_list))
+        # print(len(property_list))
         # print(property_list[0]['distance'])
-        filtered = list(filter(lambda num: num['distance'] < 10, property_list)) # right now its filtered to properties less than 10km from selected location
-        #print(len(filtered))
-        #print(filtered)
+        filtered = list(filter(lambda num: num['distance'] < 10,
+                               property_list))  # right now its filtered to properties less than 10km from selected location
+        # print(len(filtered))
+        # print(filtered)
         return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
                                dynamic_form=dynamic_form, property_list=filtered,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
 
     return render_template("testpage_map.html", user=current_user, form=form, result_list=result_list,
-                           dynamic_form=dynamic_form,property_list=property_list,
-                               target=target)
+                           dynamic_form=dynamic_form, property_list=property_list,
+                           target=target)
 
 
 @views.route("/map/<int:property_id>", methods=['GET', 'POST'])
@@ -219,7 +220,7 @@ IMAGES_ALLOWED_EXTENSIONS = {"png"}
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in allowed_extensions
+        filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
 APPROVAL_FORM_FOLDER = 'website/storage/approval_documents'
@@ -269,7 +270,7 @@ def register_property():
                                        building=form.building.data,
                                        number_of_bedrooms=form.num_bedrooms.data,
                                        floorsize=form.floor_size.data,
-                                       price_per_square_metre=round(form.monthly_rent.data/form.floor_size.data, 6),
+                                       price_per_square_metre=round(form.monthly_rent.data / form.floor_size.data, 6),
                                        year_built=form.year_built.data,
                                        floor_level=form.floor_level.data,
                                        furnishing=form.furnishing.data,
@@ -294,3 +295,12 @@ def register_property():
     # tentative return page
     flash("Placeholder success message", "success")
     return render_template("register_property.html", user=current_user, form=form)
+
+
+@login_required
+@views.route("/viewapproval")
+def view_approval_document():
+    # use the absolute path for now
+    return send_from_directory(directory='C:/Users/Dreamcore/PycharmProjects/2006/main/website/storage/property_images',
+                               path='image.png',
+                               as_attachment=False)
