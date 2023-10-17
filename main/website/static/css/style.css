@@ -724,6 +724,7 @@ button, input[type="submit"], input[type="reset"] {
     margin-top: auto;
     margin-bottom: auto;
     width: 267px;
+    height:280px;
     padding-top: 21px;
     padding-right: 20px;
     padding-bottom: 21px;
@@ -2153,6 +2154,7 @@ button, input[type="submit"], input[type="reset"] {
 .div-122 {
     position: relative;
     display: flex;
+    align-items: flex-end;
     min-height: 484px;
     margin-top: auto;
     margin-bottom: auto;
@@ -2160,6 +2162,7 @@ button, input[type="submit"], input[type="reset"] {
     padding-right: 20px;
     padding-bottom: 40px;
     flex-direction: column;
+
 }
 @media (max-width: 991px) {
     .div-122 {
@@ -2333,4 +2336,85 @@ button, input[type="submit"], input[type="reset"] {
 .form-container .btn:hover, .open-button:hover {
     opacity: 1;
 }
+
+.popup-screen{
+    z-index: 999999;
+    position: fixed;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    transition: 0.5s ease;
+    transition-property: visibility;
+  }
+  
+  .popup-screen.active{
+    visibility: visible;
+  }
+  
+  .popup-box{
+    position: relative;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 20px;
+    padding: 250px 200px;
+    border-radius: 20px;
+    box-shadow: 0 5px 25px rgb(0 0 0 / 20%);
+    transform: scale(0);
+    transition: 0.5s ease;
+    transition-property: transform;
+  }
+  
+  .popup-screen.active .popup-box{
+    transform: scale(1);
+      font-size: 2em;
+      font-family: Manrope, sans-serif;
+  }
+  
+  .popup-box h2{
+    font-size: 5em;
+    font-weight: 1000;
+    margin-bottom: 20px;
+  }
+  
+  .popup-box p{
+    font-size: 1em;
+    margin-bottom: 30px;
+  }
+  
+  .popup-box .btn{
+    color: #fff;
+    background: #DF6951;
+    font-size: 1em;
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 7px 27px;
+    border-radius: 3px;
+  }
+  
+  .close-btn{
+    position: absolute;
+    font-size: 3em;
+    top: 0;
+    right: 0;
+    margin: 15px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: 0.3s ease;
+    transition-property: opacity;
+  }
+  
+  .close-btn:hover{
+    opacity: 1;
+  }
 

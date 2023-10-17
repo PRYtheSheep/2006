@@ -2,7 +2,9 @@
 
 {% block title %}Register{% endblock title %}
 
-{% block content %}
+
+{% block popup %}
+
   {% from "includes/formhelper.html" import render_field %}
     {% if form.errors %}
         {% for field_name, field_errors in form.errors|dictsort if field_errors %}
@@ -14,6 +16,13 @@
             {% endfor %}
         {% endfor %}
   {% endif %}
+
+<div class="div">
+  <div class="popup-screen">
+    <div class="popup-box">
+      <i class="fas fa-times close-btn"></i>
+
+
   <div class="row">
       <div class="col-md-8">
           <form action="{{ url_for('auth.register_account') }}" method="post">
@@ -42,7 +51,12 @@
         </form>
       </div>
   </div>
-{% endblock content %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock popup %}
 
 {% block bottomScript %}
 <!--<script src='https://www.google.com/recaptcha/api.js' async defer></script>-->
