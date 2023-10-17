@@ -282,15 +282,20 @@ def register_property():
                                        is_visible=True)
         db.session.add(new_property)
         db.session.commit()
+        db.session.refresh(new_property)
+
+        property_id = new_property.property_id
+
+        reformatted_filename = f"{property_id}"
 
         # save the approval form to the respective folder
         app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
-        approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], approval.filename)
+        approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+".pdf")
         approval.save(approval_form_file_path)
 
         # save the image to the respective folder
         app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
-        image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], image.filename)
+        image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+".png")
         image.save(image_file_path)
 
     # tentative return page
@@ -313,11 +318,13 @@ def manage_approval_document():
     if form.validate_on_submit():
         prop_id = form.property_id.data
         selection = form.selection.data
+
         if selection == "View documents":
+            filename = f"{prop_id}.pdf"
             # use absolute path for now
             return send_from_directory(
                 directory='C:/Users/user/PycharmProjects/2006/main/website/storage/approval_documents',
-                path='Help.pdf',
+                path=filename,
                 as_attachment=False)
 
     return render_template("manage_approval.html", user=current_user, form=form)
