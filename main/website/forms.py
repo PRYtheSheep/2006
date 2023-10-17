@@ -92,5 +92,10 @@ class ChangePasswordForm(FlaskForm):
 class TargetLocationForm(FlaskForm):
     target_location = StringField("Target Location", [validators.DataRequired()])
 
+
+class ManageApprovalForm(FlaskForm):
+    property_id = IntegerField("Property ID", [validators.DataRequired()])
+    selection = SelectField("Select an action to take", choices=[('Yes', "Yes"), ("No", "No"), ("View documents", "View documents")])
+
 class DynamicForm(FlaskForm):
     address = SelectField('', choices=[], validate_choice=False)

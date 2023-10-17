@@ -1,4 +1,5 @@
 import os.path
+import webbrowser
 
 from flask import Blueprint, render_template, url_for, flash, redirect, request, send_from_directory
 from flask_login import login_required, current_user
@@ -76,7 +77,7 @@ def map_page():
         # print(address_details)
 
         # query into db for properties
-        property_list = Property.query(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
+        property_list = Property.query_(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
         # print(len(property_list))
         # print(property_list[0]['distance'])
         filtered = list(filter(lambda num: num['distance'] < 10,
@@ -297,10 +298,26 @@ def register_property():
     return render_template("register_property.html", user=current_user, form=form)
 
 
+# requires @admin annotation but will add it later after hard coding in the admin account
 @login_required
-@views.route("/viewapproval")
-def view_approval_document():
-    # use the absolute path for now
-    return send_from_directory(directory='C:/Users/Dreamcore/PycharmProjects/2006/main/website/storage/property_images',
-                               path='image.png',
-                               as_attachment=False)
+@views.route("/manage_approval_document", methods=["GET", "POST"])
+def manage_approval_document():
+    form = forms.ManageApprovalForm()
+
+    unapproved_properties = Property.query.filter_by(is_approved=0).all()
+    list_l = []
+    for i in unapproved_properties:
+        list_l.append(i.property_id)
+    flash(f"Unapproved properties: {list_l}")
+
+    if form.validate_on_submit():
+        prop_id = form.property_id.data
+        selection = form.selection.data
+        if selection == "View documents":
+            # use absolute path for now
+            return send_from_directory(
+                directory='C:/Users/user/PycharmProjects/2006/main/website/storage/approval_documents',
+                path='Help.pdf',
+                as_attachment=False)
+
+    return render_template("manage_approval.html", user=current_user, form=form)

@@ -47,7 +47,7 @@ class Property(db.Model):
     is_visible = db.Column(db.Boolean)
 
     @staticmethod
-    def query(
+    def query_(
             inputlatitude,
             inputlongitude,
             leaseTerm: list,
