@@ -3,7 +3,7 @@
 {% block title %}Register{% endblock title %}
 
 
-{% block popup %}
+{% block content %}
 
   {% from "includes/formhelper.html" import render_field %}
     {% if form.errors %}
@@ -17,13 +17,8 @@
         {% endfor %}
   {% endif %}
 
-<div class="div">
-  <div class="popup-screen">
-    <div class="popup-box">
-      <i class="fas fa-times close-btn"></i>
 
-
-  <div class="row">
+  <!-- <div class="row">
       <div class="col-md-8">
           <form action="{{ url_for('auth.register_account') }}" method="post">
             {{ form.csrf_token }}
@@ -50,13 +45,65 @@
             </div>
         </form>
       </div>
-  </div>
+  </div> -->
 
-    </div>
-  </div>
-</div>
+  <div class="div-login">
+		<form action="{{ url_for('auth.register_account') }}" method="post">
+			{{ form.csrf_token }}
+			<div class="div-login-2">
+		<div class="div-login-3">Register</div>
 
-{% endblock popup %}
+		<div class="div-login-4">
+		  <div class="div-login-5">
+			<div class="div-login-6">First Name</div>
+			<input type="text" name="first_name" class="div-login-7" required>
+		  </div>
+		</div>
+
+		<div class="div-login-4">
+		  <div class="div-login-5">
+			<div class="div-login-6">Last Name</div>
+			<input type="text" name="last_name" class="div-login-7" required>
+		  </div>
+		</div>
+
+    <div class="div-login-4">
+		  <div class="div-login-5">
+			<div class="div-login-6">Email</div>
+			<input type="text" name="email" class="div-login-7" required>
+		  </div>
+		</div>
+
+    <div class="div-login-4">
+		  <div class="div-login-5">
+			<div class="div-login-6">Password</div>
+			<input type="password" name="password" class="div-login-7" required>
+		  </div>
+		</div>
+
+    <div class="div-login-4">
+		  <div class="div-login-5">
+			<div class="div-login-6">Confirm Password</div>
+			<input type="password" name="confirm_password" class="div-login-7" required>
+		  </div>
+		</div>
+
+    <div class="div-login-4">
+		  <div class="div-login-5">
+			<div class="div-login-6">Register As</div>
+			{{ render_field(form.register_as, class_="form-control form-select") }}
+		  </div>
+		</div>
+
+		<div class="div-login-16"><input type="submit" class="div-login-17" value="Register"></div>
+		<div class="div-login-18">Don’t have an account? Register here.</div>
+		<div class="div-login-19">Forgot your password? Reset here.</div>
+	  </div>
+	</form>
+	  </div>
+
+
+    {% endblock content %}
 
 {% block bottomScript %}
 <!--<script src='https://www.google.com/recaptcha/api.js' async defer></script>-->
