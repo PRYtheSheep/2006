@@ -37,7 +37,7 @@ def register_account():
         email = form.email.data
         user = models.User.query.filter_by(email=email).first()
         if user:
-            flash("Email is already taken",category='error')
+            flash("Email: Email is already taken",category='error')
         else:
             password = generate_password_hash(form.password.data) #123456789aA$ , 123456789aA$$
             username = email.split("@")[0]

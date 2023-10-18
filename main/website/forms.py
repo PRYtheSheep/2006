@@ -22,7 +22,7 @@ class RegistrationForm(FlaskForm):
                           message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
     ])
     confirm_password = PasswordField('Confirm Password', [validators.DataRequired()])
-    register_as = SelectField('', choices=[('tenant', 'Tenant'), ('landlord', 'Landlord')])
+    register_as = SelectField('Register As', choices=[('tenant', 'Tenant'), ('landlord', 'Landlord')])
     # recaptcha = RecaptchaField()
 
 

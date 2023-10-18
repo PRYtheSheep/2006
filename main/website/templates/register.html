@@ -2,108 +2,55 @@
 
 {% block title %}Register{% endblock title %}
 
-
 {% block content %}
-
   {% from "includes/formhelper.html" import render_field %}
-    {% if form.errors %}
-        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-            {% for error in field_errors %}
-              <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ form[field_name].label }}: {{ error }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-        {% endfor %}
+  {% if form.errors %}
+      {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+          {% for error in field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{ form[field_name].label }}: {{ error }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+      {% endfor %}
   {% endif %}
-
-
-  <!-- <div class="row">
-      <div class="col-md-8">
+  <div class="container pt-5">
+    <div class="row text-center">
+      <h1>Register a New Account</h1>
+    </div>
+    <div class="row">
+      <div class="col-lg-6 offset-lg-3">
           <form action="{{ url_for('auth.register_account') }}" method="post">
             {{ form.csrf_token }}
-            <div class="form-group">
+            <div class="form-group form-box">
               {{ render_field(form.first_name, class_="form-control") }}
             </div>
-            <div class="form-group">
+            <div class="form-group form-box">
               {{ render_field(form.last_name, class_="form-control") }}
             </div>
-            <div class="form-group">
+            <div class="form-group form-box">
               {{ render_field(form.email, class_="form-control") }}
             </div>
-            <div class="form-group">
+            <div class="form-group form-box">
               {{ render_field(form.password, class_="form-control") }}
+              <div id="passwordHelpBlock" class="form-text">
+                Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
+              </div>
             </div>
-            <div class="form-group">
+            <div class="form-group form-box">
               {{ render_field(form.confirm_password, class_="form-control") }}
             </div>
-            <div class="form-group">
+            <div class="form-group form-box">
               {{ render_field(form.register_as, class_="form-control form-select") }}
             </div>
-            <div>
-              <input type="submit" class="btn btn-primary" value="Register">
+            <div class="form-group text-center">
+              <input type="submit" class="btn btn-warning" value="Register">
             </div>
         </form>
       </div>
-  </div> -->
-
-  <div class="div-login">
-		<form action="{{ url_for('auth.register_account') }}" method="post">
-			{{ form.csrf_token }}
-			<div class="div-login-2">
-		<div class="div-login-3">Register</div>
-
-		<div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">First Name</div>
-			<input type="text" name="first_name" class="div-login-7" required>
-		  </div>
-		</div>
-
-		<div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">Last Name</div>
-			<input type="text" name="last_name" class="div-login-7" required>
-		  </div>
-		</div>
-
-    <div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">Email</div>
-			<input type="text" name="email" class="div-login-7" required>
-		  </div>
-		</div>
-
-    <div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">Password</div>
-			<input type="password" name="password" class="div-login-7" required>
-		  </div>
-		</div>
-
-    <div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">Confirm Password</div>
-			<input type="password" name="confirm_password" class="div-login-7" required>
-		  </div>
-		</div>
-
-    <div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">Register As</div>
-			{{ render_field(form.register_as, class_="form-control form-select") }}
-		  </div>
-		</div>
-
-		<div class="div-login-16"><input type="submit" class="div-login-17" value="Register"></div>
-		<div class="div-login-18">Don’t have an account? Register here.</div>
-		<div class="div-login-19">Forgot your password? Reset here.</div>
-	  </div>
-	</form>
-	  </div>
-
-
-    {% endblock content %}
+    </div>
+  </div>
+{% endblock content %}
 
 {% block bottomScript %}
 <!--<script src='https://www.google.com/recaptcha/api.js' async defer></script>-->

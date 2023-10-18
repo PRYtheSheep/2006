@@ -3,71 +3,49 @@
 {% block title %}Login{% endblock title %}
 
 {% block content %}
-	{% from "includes/formhelper.html" import render_field %}
-	{% if form.errors %}
-		{% for field_name, field_errors in form.errors|dictsort if field_errors %}
-			{% for error in field_errors %}
-			<div class="alert alert-danger alert-dismissible fade show" role="alert">
-				{{ form[field_name].label }}: {{ error }}
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			</div>
-			{% endfor %}
-		{% endfor %}
-	{% endif %}
-	
-	<div class="div-login">
+<div class="container pt-5">
+    {% from "includes/formhelper.html" import render_field %}
+      {% if form.errors %}
+          {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+              {% for error in field_errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  {{ form[field_name].label }}: {{ error }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+          {% endfor %}
+    {% endif %}
+
+    <div class="row text-center">
+      <h1>Login</h1>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-6 offset-lg-3">
 		<form action="{{ url_for('auth.login_account') }}" method="post">
-			{{ form.csrf_token }}
-			<div class="div-login-2">
-		<div class="div-login-3">Login</div>
-		<div class="div-login-4">
-		  <div class="div-login-5">
-			<div class="div-login-6">Email</div>
-			<!-- <div class="div-login-7">
-			</div> -->
-			<input type="text" name="email" class="div-login-7" required>
-		  </div>
+            {{ form.csrf_token }}
+            <div class="form-group form-box">
+              {{ render_field(form.email, class_="form-control") }}
+            </div>
+            <div class="form-group form-box">
+              {{ render_field(form.password, class_="form-control") }}
+            </div>
+            <div class="form-group text-center">
+              <input type="submit" class="btn btn-warning" value="Login">
+            </div>
+        </form>
+      </div>
+    </div>
+
+	<div class="row text-center pt-3">
+		<div class="col-lg-6 offset-lg-3">
+			<a href="{{url_for('auth.register_account')}}">Don’t have an account? Register here.</a>
 		</div>
-		<div class="div-login-8">
-		  <div class="div-login-9">
-			<div class="div-login-10">Password</div>
-			<!-- <div class="div-login-11">
-			</div> -->
-			<input type="password" name="password" class="div-login-11" required>
-		  </div>
+		<div class="w-100"></div>
+		<div class="col-lg-6 offset-lg-3">
+			<a href="{{url_for('views.forget_password_request')}}">Forgot your password? Reset here.</a>			
 		</div>
-		<div class="div-login-16"><input type="submit" class="div-17" value="Login"></div>
-		<div class="div-login-18">Don’t have an account? Register here.</div>
-		<div class="div-login-19">Forgot your password? Reset here.</div>
-	  </div>
-	</form>
-	  </div>
-
-			<!-- <div class="row">
-				  <div class="col-md-8">
-					<form action="{{ url_for('auth.login_account') }}" method="post">
-			  {{ form.csrf_token }}
-			  <div class="form-group">
-				{{ render_field(form.email, class_="form-control") }}
-			  </div>
-			  <div class="form-group">
-				{{ render_field(form.password, class_="form-control") }}
-			  </div>
-			  <div>
-				<input type="submit" class="btn btn-primary" value="Login">
-			  </div>
-		  </form>
-				</div>
-			  </div> -->
-				<div class="row">
-					<div class="col-md-8">
-						<a href="{{ url_for('views.forget_password_request')}}">Forgot your password?</a>
-					</div>
-				</div>
-			  
-
-
-
-
+	</div>
+</div>
 
 {% endblock content %}
