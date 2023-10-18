@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import Form, StringField, IntegerField, PasswordField, validators, RadioField, \
     SelectField, ValidationError, FileField, \
-    SubmitField, TextAreaField, DateField
+    SubmitField, TextAreaField, DateField,FloatField
 
 
 class RegistrationForm(FlaskForm):
@@ -99,3 +99,11 @@ class ManageApprovalForm(FlaskForm):
 
 class DynamicForm(FlaskForm):
     address = SelectField('', choices=[], validate_choice=False)
+    
+
+class FiltersForm(FlaskForm):
+    address = SelectField('', choices=[], validate_choice=False)
+    monthly_rent = FloatField("Monthly rent max",[validators.DataRequired()])
+    distance = FloatField("Distance",[validators.DataRequired()])
+    num_of_bedrooms = IntegerField("Number of bedrooms",[validators.DataRequired()])
+    floor_size = FloatField("Floor size",[validators.DataRequired()])

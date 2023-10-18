@@ -27,6 +27,7 @@
     {% from "includes/formhelper.html" import render_field %}
     <div class="row">
         <div class="col-md-4">
+        {% if not result_list and not property_list%}
             <form action="{{ url_for('views.map_page') }}" method="post">
             {{ form.csrf_token }}
             <div class="form-group">
@@ -35,7 +36,8 @@
             <div>
                 <input type="submit" class="btn btn-primary" value="Search">
             </div>
-        </form>
+            </form>
+        {% endif %}
         {% if result_list %}
         <form action="{{ url_for('views.map_page') }}" method="post">
             {{ dynamic_form.csrf_token }}
@@ -44,6 +46,30 @@
             </div>
             <div>
               <input type="submit" class="btn btn-primary" value="Select Address">
+            </div>
+        </form>
+        {% endif %}
+
+        {% if property_list %}
+        <form action="{{ url_for('views.map_page') }}" method="post">
+            {{ filters_form.csrf_token }}
+            <div class="form-group">
+                {{ render_field(filters_form.address, class_="form-control form-select") }}
+            </div>
+            <div class="form-group">
+                {{ render_field(filters_form.distance, class_="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ render_field(filters_form.monthly_rent, class_="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ render_field(filters_form.num_of_bedrooms, class_="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ render_field(filters_form.floor_size, class_="form-control") }}
+            </div>
+            <div>
+              <input type="submit" class="btn btn-primary" value="Submit Distance">
             </div>
         </form>
         {% endif %}
