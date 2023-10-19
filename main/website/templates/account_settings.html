@@ -25,10 +25,10 @@
             <table class="table">
               <tbody>
                 <tr>
-                  <td><a href='{{ url_for("views.account_settings", setting_type="account") }}'>Account Information</a></td>
+                  <td><a href='{{ url_for("account_views.account_settings", setting_type="account") }}'>Account Information</a></td>
                 </tr>
                 <tr>
-                  <td><a href='{{ url_for("views.account_settings", setting_type="password") }}'>Change Password</a></td>
+                  <td><a href='{{ url_for("account_views.account_settings", setting_type="password") }}'>Change Password</a></td>
                 </tr>
               </tbody>
             </table>
@@ -45,13 +45,13 @@
     </header>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('views.account_settings') }}">Account Settings</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('account_views.account_settings') }}">Account Settings</a></li>
             <li class="breadcrumb-item active" aria-current="page">Account Information</li>
         </ol>
     </nav>
     <div class="row">
 		<div class="col-md-8">
-			<form action="{{ url_for('views.account_settings', setting_type='account') }}" method="post">
+			<form action="{{ url_for('account_views.account_settings', setting_type='account') }}" method="post">
 			  {{ form.csrf_token }}
               <div class="form-group">
                 {{ render_field(form.username, class_="form-control", value=user.username) }}
@@ -76,13 +76,13 @@
     </header>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('views.account_settings') }}">Account Settings</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('account_views.account_settings') }}">Account Settings</a></li>
             <li class="breadcrumb-item active" aria-current="page">Change Password</li>
         </ol>
     </nav>
     <div class="row">
 		<div class="col-md-8">
-			<form action="{{ url_for('views.account_settings', setting_type='password') }}" method="post">
+			<form action="{{ url_for('account_views.account_settings', setting_type='password') }}" method="post">
 			  {{ form.csrf_token }}
               <div class="form-group">
                 {{ render_field(form.current_password, class_="form-control") }}

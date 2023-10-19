@@ -28,7 +28,7 @@
                           Account
                           </a>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('views.account_settings') }}">Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('account_views.account_settings') }}">Settings</a></li>
                             {% if user.account_type == "admin" %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('views.admin_panel') }}">Admin</a></li>

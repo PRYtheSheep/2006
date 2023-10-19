@@ -40,8 +40,12 @@ def create_app():
 def register(app):
     from .routers.auth import auth
     from .routers.views import views
+    from .routers.account_views import account_views
+    from .routers.properties_views import properties_views
 
     app.register_blueprint(views, url_prefix="/")
     app.register_blueprint(auth, url_prefix="/")
+    app.register_blueprint(account_views, url_prefix="/")
+    app.register_blueprint(properties_views, url_prefix="/")
 
     return app
