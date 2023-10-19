@@ -23,7 +23,7 @@ def login_account():
         if user:
             if check_password_hash(user.password, password):
                 login_user(user)
-                return redirect(url_for("views.map_page"))
+                return redirect(url_for("properties_views.map_page"))
             else:
                 flash('Incorrect email or password', category='error')
         else:
@@ -97,7 +97,7 @@ def forget_password_request():
             return redirect(url_for("auth.login_account"))
         else:
             flash("There are no accounts with this email", 'error')
-            return redirect(url_for("views.forget_password_request"))
+            return redirect(url_for("auth.forget_password_request"))
     return render_template("forget_password.html", user=current_user, form=form)
 
 
@@ -106,10 +106,10 @@ def forget_password(reset_id):
     account_recovery = AccountRecovery.query.filter_by(recovery_string=str(reset_id)).first()
     if not account_recovery:
         flash("No such password request exist", 'error')
-        return redirect(url_for("views.forget_password_request"))
+        return redirect(url_for("auth.forget_password_request"))
     elif ((datetime.now() - account_recovery.created_at).seconds / 60 < 15):  # link expired, more than 15 mins
         flash("Password reset link has expired", 'error')
-        return redirect(url_for("views.forget_password_request"))
+        return redirect(url_for("auth.forget_password_request"))
     else:
         form = forms.ChangeForgetPasswordForm()
         if form.validate_on_submit():

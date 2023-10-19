@@ -28,7 +28,7 @@
     <div class="row">
         <div class="col-md-4">
         {% if not result_list and not property_list%}
-            <form action="{{ url_for('views.map_page') }}" method="post">
+            <form action="{{ url_for('properties_views.map_page') }}" method="post">
             {{ form.csrf_token }}
             <div class="form-group">
                 {{ render_field(form.target_location, class_="form-control") }}
@@ -39,7 +39,7 @@
             </form>
         {% endif %}
         {% if result_list %}
-        <form action="{{ url_for('views.map_page') }}" method="post">
+        <form action="{{ url_for('properties_views.map_page') }}" method="post">
             {{ dynamic_form.csrf_token }}
             <div class="form-group">
               {{ render_field(dynamic_form.address, class_="form-control form-select") }}
@@ -51,7 +51,7 @@
         {% endif %}
 
         {% if property_list %}
-        <form action="{{ url_for('views.map_page') }}" method="post">
+        <form action="{{ url_for('properties_views.map_page') }}" method="post">
             {{ filters_form.csrf_token }}
             <div class="form-group">
                 {{ render_field(filters_form.address, class_="form-control form-select") }}
