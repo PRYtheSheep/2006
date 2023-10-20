@@ -1,0 +1,175 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}{{ property.property_name}}{% endblock title %}
+
+{% block head_block %}
+
+
+{% endblock head_block %}
+
+{% block content %}
+    {% from "includes/formhelper.html" import render_field %}
+    <div class="container pt-5">
+        <div class="row">
+            <div id="carouselExampleIndicators" class="carousel slide">
+                <div class="carousel-indicators">
+                    {% for i in range(property_images|length) %}
+                    {% if i==0 %} 
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    {% else %}
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{i}}" aria-label="Slide {{i+1}}"></button>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
+                    {% for i in range(property_images|length) %}
+                    {% if i==0 %}
+                    <div class="carousel-item active">
+                        <img src="{{ url_for('properties_views.property_image_url', filename=property_images[0].image_url) }}" class="w-100 img-fluid" alt="...">
+                    </div>
+                    {% else %}
+                    <div class="carousel-item">
+                        <img src="{{ url_for('properties_views.property_image_url', filename=property_images[i].image_url) }}" class="w-100 img-fluid" alt="...">
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+        </div>
+        <hr/>
+        <div class="row">
+            <h1>{{ property.property_name}}</h1>
+            <p class="fs-4">{{ property.property_description }}</p>
+        </div>
+        <div class='row text-center'>
+            <div class="col-sm-4">
+                <strong><p class="fs-6">Flat Type: {{property.flat_type}}</p></strong>
+            </div>
+            <div class="col-sm-4">
+                <strong><p class="fs-6">Available Rooms: {{property.number_of_bedrooms}}</p></strong>
+            </div>
+            <div class="col-sm-4">
+                <strong><p class="fs-6">Rent: ${{property.monthly_rent}}/month</p></strong>
+            </div>
+        </div>
+        
+        <hr/>
+
+        <div class="row pb-3">
+            <div class="col-sm-9 pb-3">
+                <form action="{{ url_for('properties_views.map_page_info',property_id=property.property_id) }}" method="post">
+                    {{ form.csrf_token }}
+                    <div class="form-group form-box">
+                        {{ render_field(form.target_location, class_="form-control") }}
+                    </div>
+                    <div class="form-group text-center">
+                        <input type="submit" class="btn btn-primary" value="Check Routes">
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-3">
+                <div class="card text-bg-light" style="max-width: 18rem;">
+                    <div class="card-header">Address</div>
+                    <div class="card-body">
+                        <p class="card-text">{{ property.block }} {{ property.street_name }} {{ property.building }}</p>
+                        <p class="card-text">Singapore {{ property.postal }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if route_data %}
+        {% for i in range(route_data['plan']['itineraries']|length) %}
+            {% set itineraries = route_data['plan']['itineraries'][i] %}
+            <div class="row">
+                <h5>Route {{i+1}}</h5>
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">From</th>
+                        <th scope="col">To</th>
+                        <th scope="col">Mode</th>
+                        <th scope="col">Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for j in range(itineraries['legs']|length) %}
+                    {% set leg = itineraries['legs'][j] %}
+                    <tr>
+                        <th scope="row">{{j+1}}</th>
+                        <td></td>
+                        <td></td>
+                        <td>{{ leg['mode'] }}</td>
+                        <td>{{ (leg['duration']/60)|round|int }} min(s)</td>
+                      </tr> 
+                    {% endfor %}
+                    </tbody>
+                  </table>
+            </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <div class="col-sm-6 text-center">
+                <h4 style="color: #df6951;">Contact The Landlord NOW!</h4>
+            </div>
+            <div class="col-sm-6">
+                <div class="card text-bg-light float-end" style="max-width: 18rem;">
+                    <div class="card-header">Landlord</div>
+                    <div class="card-body">
+                        <p class="card-text">{{landlord.first_name}} {{landlord.last_name}}</p>
+                        <p class="card-text">Email: {{landlord.email}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block bottomScript %}
+<script>
+    var route_data = {{route_data|tojson}};
+    console.log(route_data);
+    // auto complete search bar
+    $("#target_location").on("change paste keyup", function() {
+        //console.log($(this).val());
+        
+        delay(2000);
+        
+        const data = JSON.stringify(false);
+        
+        const xhr = new XMLHttpRequest();
+            
+        xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === this.DONE) {
+                    //console.log(JSON.parse(this.responseText).results);
+                    var address_list = [];
+                    for (var i = 0; i < JSON.parse(this.responseText).results.length; i++) {
+                        address_list.push(JSON.parse(this.responseText).results[i].ADDRESS);
+                    }
+                    $("#target_location").autocomplete({
+                        source: address_list
+                    });
+
+                }
+            });
+            
+        var url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal=" + $(this).val() + "&returnGeom=N&getAddrDetails=Y&pageNum=1";
+        xhr.open("GET", url);
+        xhr.send(data);
+    });
+
+    function delay(time) {
+        return new Promise(resolve => setTimeout(resolve, time));
+    }
+</script>
+{% endblock bottomScript %}

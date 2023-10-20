@@ -24,7 +24,9 @@ class User(db.Model, UserMixin):
 
 class Property(db.Model):
     property_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    rent_approval_date = db.Column(db.Date)
+    property_name = db.Column(db.String(150)) # new
+    property_description = db.Column(db.String(150)) # new
+    rent_approval_date = db.Column(db.DateTime)
     town = db.Column(db.String(15))
     block = db.Column(db.String(6))
     street_name = db.Column(db.String(30))
@@ -45,6 +47,9 @@ class Property(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     is_approved = db.Column(db.Boolean)
     is_visible = db.Column(db.Boolean)
+    created_at = db.Column(db.DateTime) # new
+    property_images = db.relationship('PropertyImages')
+    
 
     @staticmethod
     def query_(
@@ -130,6 +135,12 @@ class PropertyFavourites(db.Model):
     pf_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     property_id = db.Column(db.Integer, db.ForeignKey("property.property_id"))
+
+class PropertyImages(db.Model):
+    pi_id = db.Column(db.Integer, primary_key=True)
+    property_id = db.Column(db.Integer, db.ForeignKey("property.property_id"))
+    image_url = db.Column(db.String(150))
+
 
 
 class AccountRecovery(db.Model):

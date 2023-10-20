@@ -3,102 +3,73 @@
 {% block title %}Account Settings{% endblock title %}
 
 {% block content %}
-    {% from "includes/formhelper.html" import render_field %}
-    {% if setting_type and form.errors %}
-        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-            {% for error in field_errors %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ form[field_name].label }}: {{ error }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-        {% endfor %}
-    {% endif %}
-    {% if not setting_type %}
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item active" aria-current="page">Account Settings</li>
-        </ol>
-    </nav>
-    <div class="row">
-        <div class="col-md-8">
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td><a href='{{ url_for("account_views.account_settings", setting_type="account") }}'>Account Information</a></td>
-                </tr>
-                <tr>
-                  <td><a href='{{ url_for("account_views.account_settings", setting_type="password") }}'>Change Password</a></td>
-                </tr>
-              </tbody>
-            </table>
-        </div>
-    </div>
-    {% elif setting_type == 'account' %}
-    <header class="py-3 mb-4 border-bottom">
-        <div class="container d-flex flex-wrap justify-content-center">
-          <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
-            <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-            <span class="fs-4">Account Information</span>
-          </a>
-        </div>
-    </header>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('account_views.account_settings') }}">Account Settings</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Account Information</li>
-        </ol>
-    </nav>
-    <div class="row">
-		<div class="col-md-8">
+{% from "includes/formhelper.html" import render_field %}
+{% if setting_type and form.errors %}
+	{% for field_name, field_errors in form.errors|dictsort if field_errors %}
+		{% for error in field_errors %}
+		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+			{{ form[field_name].label }}: {{ error }}
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+		{% endfor %}
+	{% endfor %}
+{% endif %}
+<div class="container pt-4">
+	<div class="py-3 mb-4 border-bottom">
+		<div class="container d-flex flex-wrap justify-content-center">
+			<p class="fs-4 d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">Account Settings</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-3">
+			<a href='{{ url_for("account_views.account_settings", setting_type="account") }}' class="btn 
+			{% if not setting_type or setting_type == 'password' %}
+			btn-secondary
+			{% else %}
+			btn-info	
+			{% endif %}
+			">Account Information</a>
+			<hr/>
+			<a href='{{ url_for("account_views.account_settings", setting_type="password") }}' class="btn 
+			{% if not setting_type or setting_type == 'account' %}
+			btn-secondary
+			{% else %}
+			btn-info	
+			{% endif %}">Change Password</a>
+		</div>
+		
+		<div class="col-sm-8 offset-1">
+			{% if setting_type == 'account' %}
 			<form action="{{ url_for('account_views.account_settings', setting_type='account') }}" method="post">
-			  {{ form.csrf_token }}
-              <div class="form-group">
-                {{ render_field(form.username, class_="form-control", value=user.username) }}
-              </div>
-              <div class="form-group">
-                {{ render_field(form.password, class_="form-control") }}
-              </div>
-			  <div>
-				<input type="submit" class="btn btn-primary" value="Update Information">
-			  </div>
-		  </form>
-		</div>
-	</div>
-    {% elif setting_type == 'password' %} 
-    <header class="py-3 mb-4 border-bottom">
-        <div class="container d-flex flex-wrap justify-content-center">
-          <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
-            <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-            <span class="fs-4">Change Password</span>
-          </a>
-        </div>
-    </header>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('account_views.account_settings') }}">Account Settings</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Change Password</li>
-        </ol>
-    </nav>
-    <div class="row">
-		<div class="col-md-8">
+				{{ form.csrf_token }}
+				<div class="form-group form-box">
+					{{ render_field(form.username, class_="form-control", value=user.username) }}
+				</div>
+				<div class="form-group form-box">
+					{{ render_field(form.password, class_="form-control") }}
+				</div>
+				<div>
+					<input type="submit" class="btn btn-primary" value="Update Information">
+				</div>
+			</form>
+			{% elif setting_type == 'password' %}
 			<form action="{{ url_for('account_views.account_settings', setting_type='password') }}" method="post">
-			  {{ form.csrf_token }}
-              <div class="form-group">
-                {{ render_field(form.current_password, class_="form-control") }}
-              </div>
-              <div class="form-group">
-                {{ render_field(form.new_password, class_="form-control") }}
-              </div>
-              <div class="form-group">
-                {{ render_field(form.confirm_new_password, class_="form-control") }}
-              </div>
-			  <div>
-				<input type="submit" class="btn btn-primary" value="Change Password">
-			  </div>
-		  </form>
+				{{ form.csrf_token }}
+				<div class="form-group form-box">
+					{{ render_field(form.current_password, class_="form-control") }}
+				</div>
+				<div class="form-group form-box">
+					{{ render_field(form.new_password, class_="form-control") }}
+				</div>
+				<div class="form-group form-box">
+					{{ render_field(form.confirm_new_password, class_="form-control") }}
+				</div>
+				<div class="form-group">
+					<input type="submit" class="btn btn-primary" value="Change Password">
+				</div>
+			</form>
+			{% endif %}
 		</div>
 	</div>
-    {% endif %}
-
+</div>
 {% endblock content %}

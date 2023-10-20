@@ -81,6 +81,35 @@
 
 {% block bottomScript %}
 <script>
+    // auto complete search bar
+    $("#target_location").on("change paste keyup", function() {
+        //console.log($(this).val());
+        
+        delay(2000);
+        
+        const data = JSON.stringify(false);
+        
+        const xhr = new XMLHttpRequest();
+            
+        xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === this.DONE) {
+                    //console.log(JSON.parse(this.responseText).results);
+                    var address_list = [];
+                    for (var i = 0; i < JSON.parse(this.responseText).results.length; i++) {
+                        address_list.push(JSON.parse(this.responseText).results[i].ADDRESS);
+                    }
+                    $("#target_location").autocomplete({
+                        source: address_list
+                    });
+
+                }
+            });
+            
+        var url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal=" + $(this).val() + "&returnGeom=N&getAddrDetails=Y&pageNum=1";
+        xhr.open("GET", url);
+        xhr.send(data);
+    });
+    
     async function initMap() {
         var target = {{ target|tojson }} 
         var properties = {{ property_list|tojson }} 
@@ -101,13 +130,19 @@
             // Add multiple markers to map
             var infoWindow = new google.maps.InfoWindow(), marker, i;
             
+            // get target address name
+            var target_address = {{ target_address|tojson }}['ADDRESS']
+            target_address_url = target_address.replaceAll(" ","-")
+
             // Marker for selected location
             var marker = new google.maps.Marker({
                 position: { lat: target[0], lng: target[1] },
                 map: gmap,
-                title: 'Selected Location'
+                title: target_address
             }); 
             
+
+
             sameCoord.push([target[0],target[1]])
 
             // Infowindow for selected location
@@ -173,7 +208,7 @@
                                         '</div>'+
                                         '<div jstcache="5" style="display:none"></div>'+
                                         '<div class="view-link">'+
-                                            '<a target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'" tabindex="0"> <span>View more</span> </a>'+ 
+                                            '<a target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+ 
                                         '</div>'+
                                     '</div>'+
                                 '</div>'+
