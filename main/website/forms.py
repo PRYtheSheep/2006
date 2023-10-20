@@ -69,8 +69,8 @@ class RegisterPropertyForm(FlaskForm):
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
-    image = FileField([validators.DataRequired])
-    approval_form = FileField([validators.DataRequired])
+    image = FileField("Insert a photo of the property" ,[validators.DataRequired()])
+    approval_form = FileField("Insert approval document", [validators.DataRequired()])
 
 
 class AccountSettingsForm(FlaskForm):

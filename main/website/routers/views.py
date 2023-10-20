@@ -76,6 +76,25 @@ def register_property():
             flash("Invalid image file type, only .png files are allowed", "error")
             return render_template("register_property.html", user=current_user, form=form)
 
+        postal_code = form.postal_code.data
+        url = f"https://www.onemap.gov.sg/api/common/elastic/search?searchVal={postal_code}&returnGeom=Y&getAddrDetails=N&pageNum=1"
+        response = requests.request("GET", url)
+        response = response.json()
+        test_response = {'found': 2, 'totalNumPages': 1, 'pageNum': 1, 'results': [{'SEARCHVAL': '459 JURONG WEST '
+                                                                                                 'STREET 41 SINGAPORE'
+                                                                                                 ' 640459',
+                                                                                    'X': '15490.380174702',
+                                                                                    'Y': '36938.330370849',
+                                                                                    'LATITUDE': '1.35032904500392',
+                                                                                    'LONGITUDE': '103.720911817526'},
+                                                                                   {'SEARCHVAL': 'MY FIRST SKOOL',
+                                                                                    'X': '15490.3806892578',
+                                                                                    'Y': '36938.3301892411',
+                                                                                    'LATITUDE': '1.35032904336173',
+                                                                                    'LONGITUDE': '103.72091182215'}]}
+        result_list = response["results"]
+
+
         new_property = models.Property(rent_approval_date=form.rent_approval_date.data,
                                        town=form.town.data,
                                        block=form.block.data,
