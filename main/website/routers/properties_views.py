@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 from ..secret_key import ONE_MAP_SECRET_KEY
 import re
+import base64
 
 properties_views = Blueprint('properties_views', __name__)
 
@@ -112,7 +113,7 @@ def map_page():
 @properties_views.route("/map/<int:property_id>", methods=['GET', 'POST'])
 @login_required
 def map_page_info(property_id=None):
-    property = Property.query.get(property_id)
+    property = Property.query.filter_by(property_id=property_id).first()
     if property is None or property.is_visible == 0 or property.is_approved == 0:
         flash("Property not found", category="error")
         return redirect(url_for("properties_views.map_page"))
@@ -120,6 +121,8 @@ def map_page_info(property_id=None):
         form = forms.TargetLocationForm()
         target_coord = []
         route_data = {}
+        target_location = ""
+        map_urls = []
         # if redirected from map page, fill in form automatically 
         args = request.args
         if args.get("t_coords") and args.get("t_address") and re.match(r'^\d+\.\d+\,\d+\.\d+$', args.get("t_coords")): # check if valid args
@@ -133,25 +136,25 @@ def map_page_info(property_id=None):
         if form.validate_on_submit():
             # get target location details
             target_location = form.target_location.data
-            url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=N&pageNum=1".format(
+            url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
                 target_location
             )
             response = requests.request("GET", url)
-            data = response.json()
-            #print(data)
+            target_data = response.json()
+            
             # get route details
-            target_coord = [data['results'][0]['LATITUDE'], data['results'][0]['LONGITUDE']]
+            target_coord = [target_data['results'][0]['LATITUDE'], target_data['results'][0]['LONGITUDE']]
             property_coord = [property.latitude, property.longitude]
-            url = "https://www.onemap.gov.sg/api/public/routingsvc/route?start={t_lat}%2C{t_lng}&end={p_lat}%2C{p_lng}&routeType={routeType}&date={date}&time={hh}%3A{mm}%3A{ss}&mode={mode}&maxWalkDistance={walk_dist}&numItineraries={result}".format(
-                t_lat=target_coord[0],
-                t_lng=target_coord[1],
+            url = "https://www.onemap.gov.sg/api/public/routingsvc/route?start={p_lat}%2C{p_lng}&end={t_lat}%2C{t_lng}&routeType={routeType}&date={date}&time={hh}%3A{mm}%3A{ss}&mode={mode}&maxWalkDistance={walk_dist}&numItineraries={result}".format(
                 p_lat=property_coord[0],
                 p_lng=property_coord[1],
+                t_lat=target_coord[0],
+                t_lng=target_coord[1],
                 routeType='pt', # pt, drive, walk
                 date=datetime.today().strftime('%m-%d-%Y'),
-                hh=datetime.now().hour,
-                mm=datetime.now().minute,
-                ss=datetime.now().second,
+                hh=datetime.now().strftime('%H'),
+                mm=datetime.now().strftime('%M'),
+                ss=datetime.now().strftime('%S'),
                 mode='TRANSIT', # TRANSIT, BUS, RAIL, WALK
                 walk_dist=500, # 500m
                 result=3 # 1-3 results
@@ -159,33 +162,54 @@ def map_page_info(property_id=None):
             headers = {"Authorization": ONE_MAP_SECRET_KEY} # one map api key
             response = requests.request("GET", url, headers=headers)
             route_data = response.json()
-            if response.status_code == 400: # theres an uncommon bug, where date is not in correct format despite it being correct
+            if response.status_code == 400:
                 flash("No route found", category="error")
                 print(route_data)
                 route_data = {}
-            # testing purposes
-            # check javascript console for route data
-            # print('route data')
-            # print(route_data)
-            # print('time')
-            # print(datetime.today().strftime('%m-%d-%Y'), datetime.now().hour, datetime.now().minute, datetime.now().second)
-            # itineraries = route_data['plan']['itineraries']
-            # for i in range(len(itineraries)):
-            #     itineraries[i]['duration'] = round(itineraries[i]['duration']/60)
-            #     itineraries[i]['startTime'] = datetime.fromtimestamp(itineraries[i]['startTime']/1000).strftime('%Y-%m-%d %H:%M:%S')
-            #     itineraries[i]['endTime'] = datetime.fromtimestamp(itineraries[i]['endTime']/1000).strftime('%Y-%m-%d %H:%M:%S')
-            #     itineraries[i]['walkTime'] = round(itineraries[i]['walkTime']/60)
-            
 
+            elif response.status_code == 200:
+                for iter in route_data['plan']['itineraries']:
+                    map_url = "https://www.onemap.gov.sg/amm/amm.html?mapStyle=Default&zoomLevel=11"
+                    # iwt (infowindow text) isnt working properly because the api is shit
+                    # iwt messes up the routing lines on the map
+                    # even without iwt, routing works half the time
+                    for i in range(len(iter['legs'])):
+                        leg = iter['legs'][i]
+                        
+                        # property location
+                        if i == 0:
+                            # iwt = "%3Cp%3E" + property.block + "%20" + property.street_name.replace(" ","%20") + "%20" + property.building.replace(" ","%20") + "%3C%2Fp%3E"
+                            # iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
+                            map_url += "&marker=postalcode:{}!icon:fa-hotel!colour:red!rType:{}!rDest:{},{}".format(property.postal,leg['mode'],leg['to']['lat'], leg['to']['lon'])
+
+                        # route transfers
+                        else:
+                            # iwt = "%3Cp%3E" + leg['from']['name'].replace(" ","%20") + "%3C%2Fp%3E"
+                            # iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
+                            if leg['mode'] == 'WALK':
+                                fa = "fa-user"
+                            elif leg['mode'] == 'BUS':
+                                fa = "fa-bus"
+                            elif leg['mode'] == 'SUBWAY':
+                                fa = "fa-subway"
+                            map_url += "&marker=latLng:{},{}!icon:{}!colour:red!rType:{}!rDest:{},{}".format(leg['from']['lat'], leg['from']['lon'],fa,leg['mode'],leg['to']['lat'], leg['to']['lon'])
+
+                    # target location
+                    # iwt = "%3Cp%3E" + target_data['results'][0]['ADDRESS'].replace(" ","%20") + "%3C%2Fp%3E"
+                    # iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
+                    map_url += "&marker=postalcode:{}!icon:fa-star!colour:red&popupWidth=200".format(target_data['results'][0]['POSTAL'])
+                    map_urls.append(map_url)
+        
         landlord = User.query.filter_by(user_id=property.user_id).first()
         property_images = PropertyImages.query.filter_by(property_id=property_id).all()
         property_favourties = PropertyFavourites.query.filter_by(property_id=property_id).all()
 
         return render_template("property_page.html", user=current_user, property=property, 
                                property_images=property_images, property_favourites=property_favourties, 
-                               landlord=landlord, form=form,route_data=route_data)
+                               landlord=landlord, form=form,route_data=route_data, target_location=re.sub("SINGAPORE\s\d+$","",target_location),map_urls=map_urls)
     
 @properties_views.route("/storage/<path:filename>")
+@login_required
 def property_image_url(filename):
     path = (os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'website', 'storage', 'property_images'))
     return send_from_directory(path, filename)

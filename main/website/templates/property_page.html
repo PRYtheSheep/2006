@@ -86,36 +86,74 @@
             </div>
         </div>
         {% if route_data %}
+        <div class="accordion pb-5" id="routeAccordion">
         {% for i in range(route_data['plan']['itineraries']|length) %}
             {% set itineraries = route_data['plan']['itineraries'][i] %}
-            <div class="row">
-                <h5>Route {{i+1}}</h5>
-                <table class="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">From</th>
-                        <th scope="col">To</th>
-                        <th scope="col">Mode</th>
-                        <th scope="col">Duration</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {% for j in range(itineraries['legs']|length) %}
-                    {% set leg = itineraries['legs'][j] %}
-                    <tr>
-                        <th scope="row">{{j+1}}</th>
-                        <td></td>
-                        <td></td>
-                        <td>{{ leg['mode'] }}</td>
-                        <td>{{ (leg['duration']/60)|round|int }} min(s)</td>
-                      </tr> 
-                    {% endfor %}
-                    </tbody>
-                  </table>
+            <div class="accordion-item">
+                <h5 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{i+1}}" aria-expanded="true" aria-controls="collapse{{i+1}}">
+                        Route {{i+1}} | Total Duration: {{ (itineraries['duration']/60)|round|int }} min(s)
+                      </button>
+                </h5>
+                <div id="collapse{{i+1}}" class="accordion-collapse collapse" data-bs-parent="#routeAccordion">
+                    <table class="table accordion-body">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">From</th>
+                            <th scope="col">To</th>
+                            <th scope="col">Mode</th>
+                            <th scope="col">Duration</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for j in range(itineraries['legs']|length) %}
+                        {% set leg = itineraries['legs'][j] %}
+                        <tr>
+                            <th scope="row">{{j+1}}</th>
+                            <td> {% if j==0 %} 
+                                    {{ property.block }} {{ property.street_name }} {{ property.building }} 
+                                {% else %} 
+                                    {{ leg['from']['name'] }} {% if leg['from']['stopCode']  %}({{ leg['from']['stopCode'] }}){% endif %}
+                                {% endif %} </td>
+                            <td> {% if j==(itineraries['legs']|length-1) %} 
+                                    {{target_location}} 
+                                {% else %} 
+                                    {{ leg['to']['name'] }} {% if leg['to']['stopCode']  %}({{ leg['to']['stopCode'] }}){% endif %}
+                                {% endif %} </td>
+                            <td> {% if not leg['agencyId'] %}
+                                    WALK
+                                {% else %}
+                                    {{ leg['routeLongName'] }}
+                                {% endif %} </td>
+                            <td> {{ (leg['duration']/60)|round|int }} min(s) </td>
+                        </tr> 
+                        {% endfor %}
+                        
+                        </tbody>
+                    </table>
+                    <div clss="accordion-body">
+                        <div class="row text-center">
+                            <div class="col-sm-6">
+                                <p class="fs-6">Total Walking Distance: {{ (itineraries['walkDistance']/1000)|round|int }} km</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="fs-6">Total Fare: ${{ itineraries['fare'] }}</p>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-sm-12">
+                                <p class="fs-6">Route Map:</p>
+                                <iframe src="{{map_urls[i]}}" height="1024" width="1024" scrolling="no" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         {% endfor %}
+        </div>
         {% endif %}
+        
 
         <div class="row">
             <div class="col-sm-6 text-center">
