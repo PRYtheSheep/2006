@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import Form, StringField, IntegerField, PasswordField, validators, RadioField, \
     SelectField, ValidationError, FileField, \
-    SubmitField, TextAreaField, DateField,FloatField
+    SubmitField, TextAreaField, DateField, FloatField, MultipleFileField
 
 
 class RegistrationForm(FlaskForm):
@@ -69,7 +69,7 @@ class RegisterPropertyForm(FlaskForm):
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
-    image = FileField("Insert a photo of the property" ,[validators.DataRequired()])
+    image = MultipleFileField("Insert a photo of the property" ,[validators.DataRequired()])
     approval_form = FileField("Insert approval document", [validators.DataRequired()])
 
 

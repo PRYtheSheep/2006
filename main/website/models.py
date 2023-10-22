@@ -24,18 +24,17 @@ class User(db.Model, UserMixin):
 
 class Property(db.Model):
     property_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    property_name = db.Column(db.String(150)) # new
-    property_description = db.Column(db.String(150)) # new
+    user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     rent_approval_date = db.Column(db.DateTime)
-    town = db.Column(db.String(15))
     block = db.Column(db.String(6))
     street_name = db.Column(db.String(30))
+    building = db.Column(db.String(30))
+    postal = db.Column(db.Integer)
+    town = db.Column(db.String(15))
     flat_type = db.Column(db.String(9))
     monthly_rent = db.Column(db.Integer)
-    postal = db.Column(db.Integer)
     latitude = db.Column(db.Numeric(10, 6))
     longitude = db.Column(db.Numeric(10, 6))
-    building = db.Column(db.String(30))
     number_of_bedrooms = db.Column(db.Integer)
     floorsize = db.Column(db.Numeric(7, 2))
     price_per_square_metre = db.Column(db.Numeric(7, 2))
@@ -44,9 +43,10 @@ class Property(db.Model):
     furnishing = db.Column(db.String(19))
     lease_term = db.Column(db.String(10))
     negotiable_pricing = db.Column(db.String(3))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
-    is_approved = db.Column(db.Boolean)
     is_visible = db.Column(db.Boolean)
+    is_approved = db.Column(db.Boolean)
+    property_name = db.Column(db.String(150))  # new
+    property_description = db.Column(db.String(150))  # new
     created_at = db.Column(db.DateTime) # new
     property_images = db.relationship('PropertyImages')
     

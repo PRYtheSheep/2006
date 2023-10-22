@@ -1,6 +1,7 @@
 import os.path
 import webbrowser
 
+import flask
 from flask import Blueprint, render_template, url_for, flash, redirect, request, send_from_directory
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
@@ -64,35 +65,23 @@ def register_property():
             flash("Invalid approval file type, only .pdf files are allowed", "error")
             return render_template("register_property.html", user=current_user, form=form)
 
-        # do the same check for image
-        image_filename = secure_filename(form.image.name)
-        image = request.files[image_filename]
+        # do the same check for image(multiple images can be uploaded)
+        for i, image in enumerate(form.image.data):
+            if i > 5:
+                flash("Max of 5 images are allowed", "error")
+                return render_template("register_property.html", user=current_user, form=form)
 
-        if approval.filename == "":  # empty file name, no file selected
-            flash("No image selected", "error")
-            return render_template("register_property.html", user=current_user, form=form)
-
-        if not allowed_file(image.filename, IMAGES_ALLOWED_EXTENSIONS):
-            flash("Invalid image file type, only .png files are allowed", "error")
-            return render_template("register_property.html", user=current_user, form=form)
+            if not allowed_file(secure_filename(image.filename), IMAGES_ALLOWED_EXTENSIONS):  # check if file is png type
+                flash("Invalid image file type, only .png files are allowed", "error")
+                return render_template("register_property.html", user=current_user, form=form)
 
         postal_code = form.postal_code.data
         url = f"https://www.onemap.gov.sg/api/common/elastic/search?searchVal={postal_code}&returnGeom=Y&getAddrDetails=N&pageNum=1"
         response = requests.request("GET", url)
         response = response.json()
-        test_response = {'found': 2, 'totalNumPages': 1, 'pageNum': 1, 'results': [{'SEARCHVAL': '459 JURONG WEST '
-                                                                                                 'STREET 41 SINGAPORE'
-                                                                                                 ' 640459',
-                                                                                    'X': '15490.380174702',
-                                                                                    'Y': '36938.330370849',
-                                                                                    'LATITUDE': '1.35032904500392',
-                                                                                    'LONGITUDE': '103.720911817526'},
-                                                                                   {'SEARCHVAL': 'MY FIRST SKOOL',
-                                                                                    'X': '15490.3806892578',
-                                                                                    'Y': '36938.3301892411',
-                                                                                    'LATITUDE': '1.35032904336173',
-                                                                                    'LONGITUDE': '103.72091182215'}]}
-        result_list = response["results"]
+        result_dict = response["results"][0]
+        property_latitude = result_dict['LATITUDE']
+        property_longitude = result_dict['LONGITUDE']
 
 
         new_property = models.Property(rent_approval_date=form.rent_approval_date.data,
@@ -102,8 +91,8 @@ def register_property():
                                        flat_type=form.flat_type.data,
                                        monthly_rent=form.monthly_rent.data,
                                        postal=form.postal_code.data,
-                                       latitude=0,  # placeholder value
-                                       longitude=0,  # placeholder value
+                                       latitude=property_latitude,
+                                       longitude=property_longitude,
                                        building=form.building.data,
                                        number_of_bedrooms=form.num_bedrooms.data,
                                        floorsize=form.floor_size.data,
@@ -129,10 +118,12 @@ def register_property():
         approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+".pdf")
         approval.save(approval_form_file_path)
 
-        # save the image to the respective folder
+        # save the image(s) to the respective folder
         app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
-        image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+".png")
-        image.save(image_file_path)
+        for i, image in enumerate(form.image.data):
+            image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+f"_{i}.png")
+            image.save(image_form_file_path)
+
 
     # tentative return page
     flash("Placeholder success message", "success")

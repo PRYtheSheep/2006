@@ -64,9 +64,10 @@ def map_page():
 
         # query into db for properties
         initial_property_list = Property.query_(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
-        # print(len(property_list))
+        # print(f"initial list {initial_property_list}")
+        # print(f"length is {len(property_list)}")
         # print(property_list[0]['distance'])
-        filtered = list(filter(lambda num: num['distance'] < 3
+        filtered = list(filter(lambda num: num['distance'] < 10 # testing at 10
                                and num['monthly_rent'] < 10000,
                                initial_property_list))  #default filters, distance 0-3km, monthly_rent 0-10000sgd
         # print(len(filtered))
