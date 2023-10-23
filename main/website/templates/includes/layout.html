@@ -15,7 +15,7 @@
 	{% endblock head_block %}
 </head>
 <body>
-      <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+      <nav class="navbar navbar-expand-lg" data-bs-theme="dark">
 			<div class="container-fluid">
 			<a class="navbar-brand" href="{{ url_for('views.landing_page') }}">
 				<img src="{{url_for('static', filename='images/logo.png') }}" class="img-fluid"/>
@@ -23,7 +23,7 @@
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
-			<div class="collapse navbar-collapse bg-primary" id="navbarNav">
+			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 					{% if user.is_authenticated %}
 						<li class="nav-item dropdown">
