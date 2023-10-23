@@ -102,8 +102,23 @@ class DynamicForm(FlaskForm):
     
 
 class FiltersForm(FlaskForm):
-    address = SelectField('', choices=[], validate_choice=False)
-    monthly_rent = FloatField("Monthly rent max",[validators.DataRequired()])
-    distance = FloatField("Distance",[validators.DataRequired()])
-    num_of_bedrooms = IntegerField("Number of bedrooms",[validators.DataRequired()])
-    floor_size = FloatField("Floor size",[validators.DataRequired()])
+    address = StringField('')
+    distance_min = FloatField("Minimum Distance",[validators.DataRequired()])
+    distance_max = FloatField("Maximum Distance",[validators.DataRequired()])
+    monthly_rent_max = FloatField("Maximum Monthly Rent",[validators.DataRequired()])
+    num_of_bedrooms_min = IntegerField("Minimum Number of bedrooms",[validators.DataRequired()])
+    num_of_bedrooms_max = IntegerField("Maximum Number of bedrooms",[validators.DataRequired()])
+    floor_size_min = FloatField("Minimum Floor size",[validators.DataRequired()])
+    floor_size_max = FloatField("Maximum Floor size",[validators.DataRequired()])
+    ppsm_min = FloatField("Minimum Price Per Square Meter",[validators.DataRequired()])
+    ppsm_max = FloatField("Maximum Price Per Square Meter",[validators.DataRequired()])
+    year_built_min = FloatField("Minimum Built Year",[validators.DataRequired()])
+    year_built_max = FloatField("Maximum Built Year",[validators.DataRequired()])
+    floor_level_min = FloatField("Minimum Floor Level",[validators.DataRequired()])
+    floor_level_max = FloatField("Maximum Floor Level",[validators.DataRequired()])
+    furnish_status = SelectField('Furnish Status', choices=['fully furnished', 'not furnished', 'partially furnished'], validate_choice=False)
+    lease_term = SelectField('Lease Term', choices=['1 year','2 years', '3 years', 'short term', 'flexible'], validate_choice=False)
+    negotiable = SelectField('Negotiable', choices=['yes','no'], validate_choice=False)
+    flat_type = SelectField('Flat Type', choices = ['5-ROOM', '4-ROOM', '3-ROOM', 'EXECUTIVE', '2-ROOM'],validate_choice = False)
+
+   
