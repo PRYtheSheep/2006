@@ -74,7 +74,7 @@ def forget_password_request():
             account_recovery = AccountRecovery.query.filter_by(user_id=user_id).first()
 
             if account_recovery and ((
-                                             datetime.now() - account_recovery.created_at).seconds / 60 < 5):  # user requested a reset in the last 5 minutes
+                datetime.now() - account_recovery.created_at).seconds / 60 < 5):  # user requested a reset in the last 5 minutes
                 flash("You have requested a password reset in the last 5 minutes. Please try again later.", 'error')
             else:
                 u = str(uuid.uuid4())

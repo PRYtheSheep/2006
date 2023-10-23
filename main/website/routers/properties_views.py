@@ -1,11 +1,10 @@
-from flask import Blueprint, render_template, url_for, flash, redirect, send_from_directory, request
+from flask import Blueprint, render_template, url_for, flash, redirect, send_from_directory, request, current_app
 from flask_login import login_required, current_user
 import os
 from .. import forms, db, models
 from ..models import User, Property, PropertyFavourites, PropertyImages
 from datetime import datetime
 import requests
-from ..secret_key import ONE_MAP_SECRET_KEY
 import re
 import base64
 
@@ -179,6 +178,10 @@ def map_page_info(property_id=None):
             response = requests.request("GET", url)
             target_data = response.json()
             
+            if len(target_data['results']) == 0:
+                flash("Invalid address, please select another address.", category="error")
+                return redirect(url_for("properties_views.map_page_info", property_id=property_id))
+
             # get route details
             target_coord = [target_data['results'][0]['LATITUDE'], target_data['results'][0]['LONGITUDE']]
             property_coord = [property.latitude, property.longitude]
@@ -196,7 +199,7 @@ def map_page_info(property_id=None):
                 walk_dist=500, # 500m
                 result=3 # 1-3 results
             )
-            headers = {"Authorization": ONE_MAP_SECRET_KEY} # one map api key
+            headers = {"Authorization": current_app.config["ONE_MAP_TOKEN"]} # one map api key
             response = requests.request("GET", url, headers=headers)
             route_data = response.json()
             if response.status_code == 400:
@@ -239,12 +242,46 @@ def map_page_info(property_id=None):
         
         landlord = User.query.filter_by(user_id=property.user_id).first()
         property_images = PropertyImages.query.filter_by(property_id=property_id).all()
-        property_favourties = PropertyFavourites.query.filter_by(property_id=property_id).all()
+        property_favourite = PropertyFavourites.query.filter_by(property_id=property_id).first()
 
         return render_template("property_page.html", user=current_user, property=property, 
-                               property_images=property_images, property_favourites=property_favourties, 
+                               property_images=property_images, property_favourite=property_favourite, 
                                landlord=landlord, form=form,route_data=route_data, target_location=re.sub("SINGAPORE\s\d+$","",target_location),map_urls=map_urls)
     
+@properties_views.route("/map/<int:property_id>/favourite", methods=['POST'])
+@login_required
+def favourite_property(property_id=None):
+    property = Property.query.filter_by(property_id=property_id).first()
+    if property is None or property.is_visible == 0 or property.is_approved == 0:
+        return {"error": "Property not found"}
+    else:
+        if PropertyFavourites.query.filter_by(user_id=current_user.user_id).count() >= 10:
+            return {"error": "You have reached the maximum number of favourites"}
+
+        property_favourite = PropertyFavourites.query.filter_by(property_id=property_id, user_id=current_user.user_id).first()
+        if property_favourite is None:
+            property_favourite = PropertyFavourites(property_id=property_id, user_id=current_user.user_id)
+            db.session.add(property_favourite)
+            db.session.commit()
+            return {"message": "Property added to favourites"}
+        else:
+            db.session.delete(property_favourite)
+            db.session.commit()
+            return {"message": "Property removed from favourites"} 
+
+@properties_views.route("/account/favourites", methods=['GET'])
+@login_required
+def favourited_properties():
+    property_favourites = PropertyFavourites.query.filter_by(user_id=current_user.user_id).all()
+    property_list = []
+    property_images = []
+    for property_favourite in property_favourites:
+        property = Property.query.filter_by(property_id=property_favourite.property_id).first()
+        if property is not None and property.is_visible == 1 and property.is_approved == 1:
+            property_list.append(property)
+            property_images.append(PropertyImages.query.filter_by(property_id=property.property_id).first())
+    return render_template("favourite_properties_page.html", user=current_user, property_list=property_list, property_images=property_images)
+
 @properties_views.route("/storage/<path:filename>")
 @login_required
 def property_image_url(filename):

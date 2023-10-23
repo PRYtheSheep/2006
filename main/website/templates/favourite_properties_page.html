@@ -1,0 +1,91 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Favourited Properties{% endblock title %}
+
+{% block head_block %}
+
+
+{% endblock head_block %}
+
+{% block content %}
+    {% from "includes/formhelper.html" import render_field %}
+    <div class="container pt-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center">Favourited Properties</h1>
+            </div>
+        </div>
+        <hr>
+        {% if property_list %}
+        {% for i in range(property_list|length) %}
+        {% set property = property_list[i] %}
+        {% set property_image = property_images[i] %}
+        <div class="row pb-2">
+            <div class="col-sm-4">
+                <img src="{{ url_for('properties_views.property_image_url', filename=property_image.image_url) }}" class="img-fluid" alt="Responsive image">
+            </div>
+            <div class="col-sm-8">
+                <div class="row">
+                    <div class="col-12">
+                        <h2><a href="{{ url_for('properties_views.map_page_info',property_id=property.property_id) }}">{{ property.property_name }}</a>
+                            <i value="{{property.property_id}}" class="favHeart fa-solid fa-heart" style="cursor: pointer;"></i>
+                        </h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <h3>${{ property.monthly_rent }}/month</h3>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p>{{ property.description }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p>{{ property.block }} {{ property.street_name }} {{ property.building }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p>Singapore {{ property.postal }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>     
+        {% endfor %}
+        {% else %}
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center">No favourites yet</h2>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+
+{% endblock content %}
+
+{% block bottomScript %}
+<script>
+    // favourite button
+    $(".favHeart").on("click", function() {
+        if (this.classList.contains("fa-regular")) {
+            this.classList.remove("fa-regular");
+            this.classList.add("fa-solid");
+            //favHeart.style.color = "red";
+        } else {
+            this.classList.remove("fa-solid");
+            this.classList.add("fa-regular");
+            //favHeart.style.color = "black";
+        }
+        var property_id = this.getAttribute("value");
+        var string = "/map/" + property_id + "/favourite";
+        $.post(string, function(data, status) {
+            console.log(data);
+        });
+        
+    });
+</script>
+{% endblock bottomScript %}

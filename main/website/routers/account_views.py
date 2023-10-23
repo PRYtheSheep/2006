@@ -25,10 +25,10 @@ def account_settings(setting_type=None):
                     current_user.username = form.username.data
 
                     flash("Account Information Changed Successfully", 'success')
-                    return redirect(url_for('views.account_settings'))
+                    return redirect(url_for('account_views.account_settings'))
                 else:
                     flash("Password entered is wrong", 'error')
-                    return redirect(url_for('views.account_settings', setting_type='account'))
+                    return redirect(url_for('account_views.account_settings', setting_type='account'))
             return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
         elif setting_type == 'password':
             form = forms.ChangePasswordForm()
@@ -42,10 +42,10 @@ def account_settings(setting_type=None):
                     current_user.password = new_password
 
                     flash("Your password is successfully updated.", 'success')
-                    return redirect(url_for('views.account_settings'))
+                    return redirect(url_for('account_views.account_settings'))
                 else:
                     flash("Current Password is wrong", 'error')
-                    return redirect(url_for('views.account_settings', setting_type='password'))
+                    return redirect(url_for('account_views.account_settings', setting_type='password'))
             return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
         else:
             return render_template("404.html", user=current_user)

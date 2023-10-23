@@ -46,7 +46,15 @@
         </div>
         <hr/>
         <div class="row">
-            <h1>{{ property.property_name}}</h1>
+            <h1>{{ property.property_name}} 
+                <i id='favHeart' class="
+                {% if property_favourite %}
+                    fa-solid
+                {% else %}
+                    fa-regular
+                {% endif %} 
+                fa-heart" style="cursor: pointer;"></i>
+            </h1>
             <p class="fs-4">{{ property.property_description }}</p>
         </div>
         <div class='row text-center'>
@@ -175,6 +183,23 @@
 
 {% block bottomScript %}
 <script>
+    // favourite button
+    $("#favHeart").on("click", function() {
+        if (this.classList.contains("fa-regular")) {
+            this.classList.remove("fa-regular");
+            this.classList.add("fa-solid");
+            //favHeart.style.color = "red";
+        } else {
+            this.classList.remove("fa-solid");
+            this.classList.add("fa-regular");
+            //favHeart.style.color = "black";
+        }
+        $.post("{{ url_for('properties_views.favourite_property',property_id=property.property_id) }}", function(data, status) {
+            console.log(data);
+        });
+        
+    });
+
     var route_data = {{route_data|tojson}};
     console.log(route_data);
     // auto complete search bar
