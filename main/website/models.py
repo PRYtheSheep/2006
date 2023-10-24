@@ -49,7 +49,7 @@ class Property(db.Model):
     property_description = db.Column(db.String(150))  # new
     created_at = db.Column(db.DateTime) # new
     property_images = db.relationship('PropertyImages')
-    
+    gender = db.Column(db.String(6))
 
     @staticmethod
     def query_(
@@ -132,8 +132,8 @@ class Property(db.Model):
         db.session.commit()
 
     @staticmethod
-    def reject_property(prod_id):
-        statement = f"DELETE FROM property WHERE property_id = {prod_id}"
+    def reject_property(prop_id):
+        statement = f"DELETE FROM property WHERE property_id = {prop_id}"
         db.session.execute(text(statement))
         db.session.commit()
 
@@ -145,8 +145,13 @@ class PropertyFavourites(db.Model):
 class PropertyImages(db.Model):
     pi_id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey("property.property_id"))
-    image_url = db.Column(db.String(150))
+    image_url = db.Column(db.String(250))
 
+    @staticmethod
+    def reject_property_images(prop_id):
+        statement = f"DELETE FROM property_images WHERE property_id = {prop_id}"
+        db.session.execute(text(statement))
+        db.session.commit()
 
 
 class AccountRecovery(db.Model):

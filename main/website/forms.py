@@ -69,7 +69,7 @@ class RegisterPropertyForm(FlaskForm):
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
-    image = MultipleFileField("Insert a photo of the property" ,[validators.DataRequired()])
+    image = MultipleFileField("Insert up to 5 photos of the property" ,[validators.DataRequired()])
     approval_form = FileField("Insert approval document", [validators.DataRequired()])
 
 
@@ -121,4 +121,6 @@ class FiltersForm(FlaskForm):
     negotiable = SelectField('Negotiable', choices=['yes','no'], validate_choice=False)
     flat_type = SelectField('Flat Type', choices = ['5-ROOM', '4-ROOM', '3-ROOM', 'EXECUTIVE', '2-ROOM'],validate_choice = False)
 
-   
+class EditProperty(FlaskForm):
+    Prop_id = IntegerField("Property ID", [validators.DataRequired()])
+    image = MultipleFileField("Upload new photos, all previous uploaded photos will be deleted")

@@ -7,8 +7,9 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from .custom_decorators import admin_required, landlord_required
+from .properties_views import property_image_url
 from .. import forms, db, models
-from ..models import User, Property, PropertyFavourites
+from ..models import User, Property, PropertyFavourites, PropertyImages
 from datetime import datetime
 import requests
 
@@ -123,12 +124,21 @@ def register_property():
         approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+".pdf")
         approval.save(approval_form_file_path)
 
-        # save the image(s) to the respective folder
+        # save the image(s) to the respective folder and add it into the property_image database
+        # image_url in the property_image database will store all images separated by a comma
         app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
+        image_url = ""
         for i, image in enumerate(form.image.data):
             image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+f"_{i}.png")
             image.save(image_form_file_path)
+            image_url += reformatted_filename+f"_{i}.png" + ", "
 
+        # remove the final comma added
+        image_url = image_url[:len(image_url)-2]
+        new_property_image = PropertyImages(property_id=property_id,
+                                           image_url=image_url)
+        db.session.add(new_property_image)
+        db.session.commit()
 
     # tentative return page
     flash("Placeholder success message", "success")
@@ -157,9 +167,10 @@ def manage_approval_document():
 
         if selection == "View documents":
             filename = f"{prop_id}.pdf"
-            # use absolute path for now
+            path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'storage',
+                                'approval_documents')
             return send_from_directory(
-                directory='C:/Users/user/PycharmProjects/2006/main/website/storage/approval_documents',
+                directory=path,
                 path=filename,
                 as_attachment=False)
 
@@ -169,7 +180,12 @@ def manage_approval_document():
 
         else:
             # selection is "No"
+            PropertyImages.reject_property_images(prop_id)
             Property.reject_property(prop_id)
             flash("Property rejected, deleted from database", "error")
 
     return render_template("manage_approval.html", user=current_user, form=form)
+
+@views.route("/testing")
+def testing():
+    return property_image_url("8593_1.png")
