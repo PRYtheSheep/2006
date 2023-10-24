@@ -58,6 +58,7 @@ class RegisterPropertyForm(FlaskForm):
                                                   ('Executive', 'Executive')])
     monthly_rent = IntegerField('Monthly Rent', [validators.NumberRange(min=0, max=10000)])
     num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
+    gender = SelectField('Gender', choices=[('mixed', 'mixed'), ('male', 'male'), ('female', 'female')])
     floor_size = IntegerField('Floor size in square metres', [validators.NumberRange(min=0, max=200)])
     year_built = IntegerField('Year Built', [validators.NumberRange(min=1950, max=2023)])
     furnishing = SelectField('Furnishing', choices=[('Not Furnished', 'Not Furnished'),

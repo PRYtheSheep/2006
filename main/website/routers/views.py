@@ -110,7 +110,8 @@ def register_property():
                                        is_visible=True,
                                        property_name="no name for now",
                                        property_description="no description for now",
-                                       created_at=form.rent_approval_date.data)
+                                       created_at=form.rent_approval_date.data,
+                                       gender=form.gender.data)
         db.session.add(new_property)
         db.session.commit()
         db.session.refresh(new_property)
