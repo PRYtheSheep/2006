@@ -2712,7 +2712,7 @@ button, input[type="submit"], input[type="reset"] {
     color: rgba(0, 0, 0, 0.59);
     text-align: center;
     font-family: Poppins, sans-serif;
-    font-size: 11.568px;
+    font-size: 15px;
     font-weight: 400;
     align-self: center;
     margin-top: 1px;
@@ -2723,5 +2723,8 @@ button, input[type="submit"], input[type="reset"] {
     .div-login-19 {
       text-wrap: initial;
     }
+  }
+  .div-login-19 a{
+    color: blue;
   }
 

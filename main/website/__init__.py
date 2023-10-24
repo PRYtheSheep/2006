@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import os
 from flask_login import LoginManager, current_user
+from .secret_key import refresh_one_map_token
 
 db = SQLAlchemy()
 DB_NAME = "mydb"
@@ -12,12 +13,6 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://root:96173880@localhost/{DB_NAME}"
     db.init_app(app)
 
-    # from .routers.auth import auth
-    # from .routers.views import views
-
-    # app.register_blueprint(views, url_prefix="/")
-    # app.register_blueprint(auth, url_prefix="/")
-
     from . import models
 
     with app.app_context():
@@ -26,6 +21,7 @@ def create_app():
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login_account'
     login_manager.init_app(app)
+    login_manager.login_message = 'Please login to access this page.'
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -34,6 +30,8 @@ def create_app():
     @app.errorhandler(404)
     def not_found(e):
         return render_template("404.html", user=current_user)
+
+    app.config['ONE_MAP_TOKEN'] = refresh_one_map_token()
 
     return app
 

@@ -1,11 +1,10 @@
-from flask import Blueprint, render_template, url_for, flash, redirect, send_from_directory, request
+from flask import Blueprint, render_template, url_for, flash, redirect, send_from_directory, request, current_app
 from flask_login import login_required, current_user
 import os
 from .. import forms, db, models
 from ..models import User, Property, PropertyFavourites, PropertyImages
 from datetime import datetime
 import requests
-from ..secret_key import ONE_MAP_SECRET_KEY
 import re
 import base64
 
@@ -52,12 +51,18 @@ def map_page():
 
     elif dynamic_form.validate_on_submit() and not filters_form.validate_on_submit():
         target_location = dynamic_form.address.data
-        filters_form.address.choices = [target_location]
+        filters_form.address.data = target_location
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
             target_location
         )
         response = requests.request("GET", url)
         data = response.json()
+        #data['results'] may be empty
+        if (len(data['results']) == 0):
+            # Show an alert with the error message and navigate back
+            error_message = "Invalid address, please select another address."
+            return f"<script>alert('{error_message}'); history.go(-1);</script>"
+
         address_details = data['results'][0]
         target_address = address_details
         # print(address_details)
@@ -76,11 +81,27 @@ def map_page():
                                dynamic_form=dynamic_form,filters_form = filters_form, property_list=filtered,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])],target_address = target_address)
     elif filters_form.validate_on_submit():
+        
         address = filters_form.address.data
-        distance = filters_form.distance.data
-        monthly_rent = filters_form.monthly_rent.data
-        floor_size = filters_form.floor_size.data
-        num_of_bedrooms = filters_form.num_of_bedrooms.data
+        distance_min = filters_form.distance_min.data
+        distance_max = filters_form.distance_max.data
+        monthly_rent_max = filters_form.monthly_rent_max.data
+        floor_size_min = filters_form.floor_size_min.data
+        floor_size_max = filters_form.floor_size_max.data
+        num_of_bedrooms_min = filters_form.num_of_bedrooms_min.data
+        num_of_bedrooms_max = filters_form.num_of_bedrooms_max.data
+        ppsm_min = filters_form.ppsm_min.data
+        ppsm_max = filters_form.ppsm_max.data
+        year_built_min = filters_form.year_built_min.data
+        year_built_max = filters_form.year_built_max.data
+        floor_level_min = filters_form.floor_level_min.data
+        floor_level_max = filters_form.floor_level_max.data
+        furnish_status = filters_form.furnish_status.data
+        lease_term = filters_form.lease_term.data
+        negotiable = filters_form.negotiable.data
+        flat_type = filters_form.flat_type.data
+     
+
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
             address
         )
@@ -94,16 +115,30 @@ def map_page():
         initial_property_list = Property.query_(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
         # print(len(property_list))
         # print(property_list[0]['distance'])
-        filtered = list(filter(lambda num: num['distance'] < distance
-                               and num['monthly_rent'] < monthly_rent
-                               and num['number_of_bedrooms'] > num_of_bedrooms
-                               and num['floorsize'] > floor_size,
+        filtered = list(filter(lambda num: num['distance'] > distance_min
+                               and num['distance'] < distance_max
+                               and num['monthly_rent'] < monthly_rent_max
+                               and num['number_of_bedrooms'] > num_of_bedrooms_min
+                               and num['number_of_bedrooms'] < num_of_bedrooms_max
+                               and num['floorsize'] > floor_size_min
+                               and num['floorsize'] < floor_size_max
+                               and num['price_per_square_metre'] > ppsm_min
+                               and num['price_per_square_metre'] < ppsm_max
+                               and num['year_built'] > year_built_min
+                               and num['year_built'] < year_built_max
+                               and num['floor_level'] > floor_level_min
+                               and num['floor_level'] < floor_level_max
+                               and num['furnishing'] == furnish_status
+                               and num['lease_term'] == lease_term
+                               and num['negotiable_pricing'] == negotiable
+                               and num['flat_type'] == flat_type,
+
                                initial_property_list))  #default filters, distance 0-3km, monthly_rent 0-10000sgd
         
 
 
         return render_template("query_map_page.html", user=current_user, form=form, result_list=result_list,
-                               dynamic_form=dynamic_form, filters_form = filters_form,property_list=filtered,
+                               dynamic_form=dynamic_form, filters_form = filters_form,property_list=filtered,target_address = target_address,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
 
     return render_template("query_map_page.html", user=current_user, form=form, result_list=result_list,
@@ -143,6 +178,10 @@ def map_page_info(property_id=None):
             response = requests.request("GET", url)
             target_data = response.json()
             
+            if len(target_data['results']) == 0:
+                flash("Invalid address, please select another address.", category="error")
+                return redirect(url_for("properties_views.map_page_info", property_id=property_id))
+
             # get route details
             target_coord = [target_data['results'][0]['LATITUDE'], target_data['results'][0]['LONGITUDE']]
             property_coord = [property.latitude, property.longitude]
@@ -160,7 +199,7 @@ def map_page_info(property_id=None):
                 walk_dist=500, # 500m
                 result=3 # 1-3 results
             )
-            headers = {"Authorization": ONE_MAP_SECRET_KEY} # one map api key
+            headers = {"Authorization": current_app.config["ONE_MAP_TOKEN"]} # one map api key
             response = requests.request("GET", url, headers=headers)
             route_data = response.json()
             if response.status_code == 400:
@@ -203,12 +242,46 @@ def map_page_info(property_id=None):
         
         landlord = User.query.filter_by(user_id=property.user_id).first()
         property_images = PropertyImages.query.filter_by(property_id=property_id).all()
-        property_favourties = PropertyFavourites.query.filter_by(property_id=property_id).all()
+        property_favourite = PropertyFavourites.query.filter_by(property_id=property_id).first()
 
         return render_template("property_page.html", user=current_user, property=property, 
-                               property_images=property_images, property_favourites=property_favourties, 
+                               property_images=property_images, property_favourite=property_favourite, 
                                landlord=landlord, form=form,route_data=route_data, target_location=re.sub("SINGAPORE\s\d+$","",target_location),map_urls=map_urls)
     
+@properties_views.route("/map/<int:property_id>/favourite", methods=['POST'])
+@login_required
+def favourite_property(property_id=None):
+    property = Property.query.filter_by(property_id=property_id).first()
+    if property is None or property.is_visible == 0 or property.is_approved == 0:
+        return {"error": "Property not found"}
+    else:
+        if PropertyFavourites.query.filter_by(user_id=current_user.user_id).count() >= 10:
+            return {"error": "You have reached the maximum number of favourites"}
+
+        property_favourite = PropertyFavourites.query.filter_by(property_id=property_id, user_id=current_user.user_id).first()
+        if property_favourite is None:
+            property_favourite = PropertyFavourites(property_id=property_id, user_id=current_user.user_id)
+            db.session.add(property_favourite)
+            db.session.commit()
+            return {"message": "Property added to favourites"}
+        else:
+            db.session.delete(property_favourite)
+            db.session.commit()
+            return {"message": "Property removed from favourites"} 
+
+@properties_views.route("/account/favourites", methods=['GET'])
+@login_required
+def favourited_properties():
+    property_favourites = PropertyFavourites.query.filter_by(user_id=current_user.user_id).all()
+    property_list = []
+    property_images = []
+    for property_favourite in property_favourites:
+        property = Property.query.filter_by(property_id=property_favourite.property_id).first()
+        if property is not None and property.is_visible == 1 and property.is_approved == 1:
+            property_list.append(property)
+            property_images.append(PropertyImages.query.filter_by(property_id=property.property_id).first())
+    return render_template("favourite_properties_page.html", user=current_user, property_list=property_list, property_images=property_images)
+
 @properties_views.route("/storage/<path:filename>")
 @login_required
 def property_image_url(filename):

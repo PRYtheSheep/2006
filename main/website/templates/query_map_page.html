@@ -53,26 +53,74 @@
         {% if property_list %}
         <form action="{{ url_for('properties_views.map_page') }}" method="post">
             {{ filters_form.csrf_token }}
-            <div class="form-group">
+
+            <div class="form-row">
                 {{ render_field(filters_form.address, class_="form-control form-select") }}
             </div>
-            <div class="form-group">
-                {{ render_field(filters_form.distance, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(filters_form.monthly_rent, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(filters_form.num_of_bedrooms, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(filters_form.floor_size, class_="form-control") }}
-            </div>
+            
+                <div class="form-group">
+                    {{ render_field(filters_form.distance_min, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.distance_max, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.monthly_rent_max, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.num_of_bedrooms_min, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.num_of_bedrooms_max, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.floor_size_min, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.floor_size_max, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.ppsm_min, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.ppsm_max, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.year_built_min, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.year_built_max, class_="form-control") }}
+                </div>
+    
+                <div class="form-group">
+                    {{ render_field(filters_form.floor_level_min, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ render_field(filters_form.floor_level_max, class_="form-control") }}
+                </div>
+        
+                <div class="form-group">
+                    {{ render_field(filters_form.furnish_status, class_="form-control form-select") }}
+                </div>
+            
+                <div class="form-group">
+                    {{ render_field(filters_form.lease_term, class_="form-control form-select") }}
+                </div>
+    
+                <div class="form-group">
+                    {{ render_field(filters_form.negotiable, class_="form-control form-select") }}
+                </div>
+        
+                <div class="form-group">
+                    {{ render_field(filters_form.flat_type, class_="form-control form-select") }}
+                </div>
+        
             <div>
-              <input type="submit" class="btn btn-primary" value="Submit Distance">
+              <input type="submit" class="btn btn-primary" value="Apply Filters">
             </div>
         </form>
         {% endif %}
+
         </div>
         <div id="propertyFound"></div>
         <div id="map-container"></div>
@@ -131,6 +179,7 @@
             var infoWindow = new google.maps.InfoWindow(), marker, i;
             
             // get target address name
+            //print("CHEKKKK",target_address)
             var target_address = {{ target_address|tojson }}['ADDRESS']
             target_address_url = target_address.replaceAll(" ","-")
 
