@@ -48,15 +48,15 @@ class ChangeForgetPasswordForm(FlaskForm):
 
 
 class RegisterPropertyForm(FlaskForm):
+    postal_code = IntegerField('Postal Code', [validators.NumberRange(min=0, max=999999)])
     town = StringField('Town', [validators.DataRequired()])
-    block = StringField('Block', [validators.DataRequired()])
-    building = StringField('Building', [validators.DataRequired()])
-    street_name = StringField('Street Name', [validators.DataRequired()])
+    # block = StringField('Block', [validators.DataRequired()]) # don't need block
+    # building = StringField('Building', [validators.DataRequired()]) # don't need building
+    # street_name = StringField('Street Name', [validators.DataRequired()]) # don't need streetname
     flat_type = SelectField('Flat Type', choices=[('2-Room', '2-Room'), ('3-Room', '3-Room'),
                                                   ('4-Room', '4-Room'), ('5-Room', '5-Room'),
                                                   ('Executive', 'Executive')])
     monthly_rent = IntegerField('Monthly Rent', [validators.NumberRange(min=0, max=10000)])
-    postal_code = IntegerField('Postal Code', [validators.NumberRange(min=0, max=999999)])
     num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
     floor_size = IntegerField('Floor size in square metres', [validators.NumberRange(min=0, max=200)])
     year_built = IntegerField('Year Built', [validators.NumberRange(min=1950, max=2023)])

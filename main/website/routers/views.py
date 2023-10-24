@@ -76,24 +76,27 @@ def register_property():
                 return render_template("register_property.html", user=current_user, form=form)
 
         postal_code = form.postal_code.data
-        url = f"https://www.onemap.gov.sg/api/common/elastic/search?searchVal={postal_code}&returnGeom=Y&getAddrDetails=N&pageNum=1"
+        url = f"https://www.onemap.gov.sg/api/common/elastic/search?searchVal={postal_code}&returnGeom=Y&getAddrDetails=Y&pageNum=1"
         response = requests.request("GET", url)
         response = response.json()
         result_dict = response["results"][0]
         property_latitude = result_dict['LATITUDE']
         property_longitude = result_dict['LONGITUDE']
+        property_streetname = result_dict['ROAD_NAME']
+        property_building = result_dict['BUILDING'] if result_dict['BUILDING'] != 'NIL' else result_dict['BLK_NO']
+        property_block = result_dict['BLK_NO']
 
-
-        new_property = models.Property(rent_approval_date=form.rent_approval_date.data,
+        new_property = models.Property(user_id=current_user.user_id,
+                                       rent_approval_date=form.rent_approval_date.data,
                                        town=form.town.data,
-                                       block=form.block.data,
-                                       street_name=form.street_name.data,
+                                       block=property_block,
+                                       street_name=property_streetname,
                                        flat_type=form.flat_type.data,
                                        monthly_rent=form.monthly_rent.data,
                                        postal=form.postal_code.data,
                                        latitude=property_latitude,
                                        longitude=property_longitude,
-                                       building=form.building.data,
+                                       building=property_building,
                                        number_of_bedrooms=form.num_bedrooms.data,
                                        floorsize=form.floor_size.data,
                                        price_per_square_metre=round(form.monthly_rent.data / form.floor_size.data, 6),
@@ -102,9 +105,11 @@ def register_property():
                                        furnishing=form.furnishing.data,
                                        lease_term=form.lease_term.data,
                                        negotiable_pricing=form.negotiable.data,
-                                       user_id=current_user.user_id,
                                        is_approved=False,
-                                       is_visible=True)
+                                       is_visible=True,
+                                       property_name="no name for now",
+                                       property_description="no description for now",
+                                       created_at=form.rent_approval_date.data)
         db.session.add(new_property)
         db.session.commit()
         db.session.refresh(new_property)
