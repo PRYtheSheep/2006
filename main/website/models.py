@@ -131,6 +131,12 @@ class Property(db.Model):
         db.session.execute(text(statement))
         db.session.commit()
 
+    @staticmethod
+    def reject_property(prod_id):
+        statement = f"DELETE FROM property WHERE property_id = {prod_id}"
+        db.session.execute(text(statement))
+        db.session.commit()
+
 class PropertyFavourites(db.Model):
     pf_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))

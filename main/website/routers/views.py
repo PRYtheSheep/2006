@@ -151,6 +151,10 @@ def manage_approval_document():
         prop_id = form.property_id.data
         selection = form.selection.data
 
+        if prop_id not in list_l:
+            flash("Invalid property ID", "error")
+            return render_template("manage_approval.html", user=current_user, form=form)
+
         if selection == "View documents":
             filename = f"{prop_id}.pdf"
             # use absolute path for now
@@ -158,5 +162,14 @@ def manage_approval_document():
                 directory='C:/Users/user/PycharmProjects/2006/main/website/storage/approval_documents',
                 path=filename,
                 as_attachment=False)
+
+        elif selection == "Yes":
+            Property.approve_property(prop_id)
+            flash("Property approved")
+
+        else:
+            # selection is "No"
+            Property.reject_property(prop_id)
+            flash("Property rejected, deleted from database", "error")
 
     return render_template("manage_approval.html", user=current_user, form=form)
