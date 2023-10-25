@@ -122,6 +122,22 @@ class FiltersForm(FlaskForm):
     negotiable = SelectField('Negotiable', choices=['yes','no'], validate_choice=False)
     flat_type = SelectField('Flat Type', choices = ['5-ROOM', '4-ROOM', '3-ROOM', 'EXECUTIVE', '2-ROOM'],validate_choice = False)
 
+
+class SelectPropertyToEdit(FlaskForm):
+    prop_id = IntegerField("Property ID", [validators.DataRequired()])
+
+
 class EditProperty(FlaskForm):
-    Prop_id = IntegerField("Property ID", [validators.DataRequired()])
-    image = MultipleFileField("Upload new photos, all previous uploaded photos will be deleted")
+    monthly_rent = IntegerField('Monthly Rent', [validators.NumberRange(min=0, max=10000)])
+    num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
+    gender = SelectField('Gender', choices=[('mixed', 'mixed'), ('male', 'male'), ('female', 'female')])
+    furnishing = SelectField('Furnishing', choices=[('Not Furnished', 'Not Furnished'),
+                                                    ('Partially Furnished', 'Partially Furnished'),
+                                                    ('Fully Furnished', 'Fully Furnished')])
+    rent_approval_date = DateField('List Date', format="%Y-%m-%d")
+    lease_term = SelectField('Lease Term', choices=[('1 year', '1 year'), ('2 years', '2 years'),
+                                                    ('3 years', '3 years'), ('Short Term', 'Short Term'),
+                                                    ('Flexible', 'Flexible')])
+    negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
+    image = MultipleFileField("Insert up to 5 photos of the property")
+    approval_form = FileField("Insert approval document", [validators.DataRequired()])

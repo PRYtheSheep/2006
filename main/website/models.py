@@ -137,6 +137,44 @@ class Property(db.Model):
         db.session.execute(text(statement))
         db.session.commit()
 
+    @staticmethod
+    def update_property(property_id,
+                        monthly_rent=None,
+                        num_bedrooms=None,
+                        gender=None,
+                        furnishing=None,
+                        rent_approval_date=None,
+                        lease_term=None,
+                        negotiable=None):
+        prop = Property.query.filter_by(property_id=property_id).first()
+
+        # update the property data if data is provided in the argument
+        if monthly_rent is not None:
+            prop.monthly_rent = monthly_rent
+            prop.price_per_square_metre = monthly_rent / prop.floorsize
+
+        if num_bedrooms is not None:
+            prop.number_of_bedrooms = num_bedrooms
+
+        if gender is not None:
+            prop.gender = gender
+
+        if furnishing is not None:
+            prop.furnishing = furnishing
+
+        if rent_approval_date is not None:
+            prop.rent_approval_date = rent_approval_date
+
+        if lease_term is not None:
+            prop.lease_term = lease_term
+
+        if negotiable is not None:
+            prop.negotiable_pricing = negotiable
+
+        # set is_approved to false and commit it into the database
+        prop.is_approved = False
+        db.session.commit()
+
 class PropertyFavourites(db.Model):
     pf_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))

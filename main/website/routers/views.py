@@ -34,13 +34,14 @@ def landing_page():
 def admin_panel():
     return render_template("homepage.html", user=current_user)  # temp
 
+
 APPROVAL_FORM_ALLOWED_EXTENSIONS = {"pdf"}
 IMAGES_ALLOWED_EXTENSIONS = {"png"}
 
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in allowed_extensions
+           filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
 APPROVAL_FORM_FOLDER = 'website/storage/approval_documents'
@@ -72,7 +73,8 @@ def register_property():
                 flash("Max of 5 images are allowed", "error")
                 return render_template("register_property.html", user=current_user, form=form)
 
-            if not allowed_file(secure_filename(image.filename), IMAGES_ALLOWED_EXTENSIONS):  # check if file is png type
+            if not allowed_file(secure_filename(image.filename),
+                                IMAGES_ALLOWED_EXTENSIONS):  # check if file is png type
                 flash("Invalid image file type, only .png files are allowed", "error")
                 return render_template("register_property.html", user=current_user, form=form)
 
@@ -122,7 +124,7 @@ def register_property():
 
         # save the approval form to the respective folder
         app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
-        approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+".pdf")
+        approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + ".pdf")
         approval.save(approval_form_file_path)
 
         # save the image(s) to the respective folder and add it into the property_image database
@@ -130,14 +132,14 @@ def register_property():
         app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
         image_url = ""
         for i, image in enumerate(form.image.data):
-            image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename+f"_{i}.png")
+            image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + f"_{i}.png")
             image.save(image_form_file_path)
-            image_url += reformatted_filename+f"_{i}.png" + ", "
+            image_url += reformatted_filename + f"_{i}.png" + ", "
 
         # remove the final comma added
-        image_url = image_url[:len(image_url)-2]
+        image_url = image_url[:len(image_url) - 2]
         new_property_image = PropertyImages(property_id=property_id,
-                                           image_url=image_url)
+                                            image_url=image_url)
         db.session.add(new_property_image)
         db.session.commit()
 
@@ -187,6 +189,122 @@ def manage_approval_document():
 
     return render_template("manage_approval.html", user=current_user, form=form)
 
-@views.route("/testing")
-def testing():
-    return property_image_url("8593_1.png")
+
+@landlord_required
+@views.route("/select_property_to_edit", methods=["GET", "POST"])
+def select_property_to_edit():
+    form = forms.SelectPropertyToEdit()
+
+    # get all properties owned by user and display the IDs
+    properties = Property.query.filter_by(user_id=current_user.user_id).all()
+    list_l = []
+    for i in properties:
+        list_l.append(i.property_id)
+    flash(f"Your property ID(s): {list_l}")
+
+    if form.validate_on_submit():
+        # entered property ID is not valid
+        if form.prop_id.data not in list_l:
+            flash("Invalid property ID", "error")
+            return render_template("select_property_to_edit.html", user=current_user, form=form)
+        else:
+            return redirect(url_for("views.edit_property", prop_id=form.prop_id.data))
+
+    return render_template("select_property_to_edit.html", user=current_user, form=form)
+
+
+@landlord_required
+@views.route("/edit_property/<prop_id>", methods=["GET", "POST"])
+def edit_property(prop_id):
+    form = forms.EditProperty()
+    # get the property with prop_id and prefill in the form with previous information
+    current_property = Property.query.filter_by(property_id=prop_id).first()
+
+    if request.method == "GET":
+        # prefill the form
+        form.monthly_rent.data = current_property.monthly_rent
+        form.num_bedrooms.data = current_property.number_of_bedrooms
+        form.gender.data = current_property.gender
+        form.furnishing.data = current_property.furnishing
+        form.rent_approval_date.data = current_property.rent_approval_date
+        form.lease_term.data = current_property.lease_term
+        form.negotiable.data = current_property.negotiable_pricing
+    else:
+        if form.validate_on_submit():
+
+            new_monthly_rent = None
+            new_num_bedrooms = None
+            new_gender = None
+            new_furnishing = None
+            new_rent_approval_data = None
+            new_lease_term = None
+            new_negotiable = None
+
+            # update the data in the property, property image database
+            # check if the input data is different from current data
+            if form.monthly_rent.data != current_property.monthly_rent:
+                new_monthly_rent = form.monthly_rent.data
+            if form.num_bedrooms.data != current_property.number_of_bedrooms:
+                new_num_bedrooms = form.num_bedrooms.data
+            if form.gender.data != current_property.gender:
+                new_gender = form.gender.data
+            if form.furnishing.data != current_property.furnishing:
+                new_furnishing = form.furnishing.data
+            if form.rent_approval_date.data != current_property.rent_approval_date:
+                new_rent_approval_data = form.rent_approval_date.data
+            if form.lease_term.data != current_property.lease_term:
+                new_lease_term = form.lease_term.data
+            if form.negotiable != current_property.negotiable_pricing:
+                new_negotiable = form.negotiable.data
+
+            Property.update_property(property_id=prop_id,
+                                     monthly_rent=new_monthly_rent,
+                                     num_bedrooms=new_num_bedrooms,
+                                     gender=new_gender,
+                                     furnishing=new_furnishing,
+                                     rent_approval_date=new_rent_approval_data,
+                                     lease_term=new_lease_term,
+                                     negotiable=new_negotiable)
+
+            # check the images and approval document
+            approval_form_filename = secure_filename(form.approval_form.name)  # get the file name from the form
+            approval = request.files[approval_form_filename]  # get the filestorage object
+
+            if approval.filename == "":  # empty file name, no file selected
+                flash("No approval file selected", "error")
+                return render_template("edit_property.html", user=current_user, form=form, prop_id=prop_id)
+
+            if not allowed_file(approval.filename, APPROVAL_FORM_ALLOWED_EXTENSIONS):  # check if file is pdf type
+                flash("Invalid approval file type, only .pdf files are allowed", "error")
+                return render_template("edit_property.html", user=current_user, form=form, prop_id=prop_id)
+
+            reformatted_filename = f"{prop_id}"
+            app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
+            approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + ".pdf")
+
+            # delete the old approval form
+            if os.path.exists(approval_form_file_path):
+                os.remove(approval_form_file_path)
+
+            # save the approval form to the respective folder
+            approval.save(approval_form_file_path)
+
+            # check if there is any images uploaded
+            if form.image.data:
+                # new images were submitted
+                # get the list of previous images from property image database
+                current_images = PropertyImages.query.filter_by(property_id=prop_id).first()
+                image_name_list = current_images.image_url.split(",")
+
+                # delete the old images from storage older
+                for image in image_name_list:
+                    pass
+                    # if os.path.exists(image.strip()):
+                        # os.remove(image.strip())
+
+                # add the new images to the folder
+
+            # flash success message
+            flash("Property info updated", "success")
+
+    return render_template("edit_property.html", user=current_user, form=form, prop_id=prop_id)
