@@ -33,13 +33,38 @@
 							</a>
 							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 								<li><a class="dropdown-item" href="{{ url_for('properties_views.favourited_properties') }}">Favourites</a></li> 
-								<li><a class="dropdown-item" href="{{ url_for('account_views.account_settings') }}">Settings</a></li>
-								{% if user.account_type == "admin" %}
+								
+								
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="{{ url_for('views.manage_approval_document') }}">Manage Approval Document</a></li>
-								{% endif %}
+								<li><a class="dropdown-item" href="{{ url_for('account_views.account_settings') }}">Settings</a></li>
+								
 							</ul>
 						</li>
+						{% if user.account_type == "admin" %}
+						<li class="nav-item">
+							<a class="dropdown-item" href="{{ url_for('views.manage_approval_document') }}">Manage Approval Document</a>
+						</li>
+						{% endif %}
+
+						{% if user.account_type == "landlord" %}
+
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Property
+							</a>
+							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+								<li><a class="dropdown-item" href="{{ url_for('views.register_property') }}">Register Property</a></li> 
+								
+								
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="{{ url_for('views.select_property_to_edit') }}">Edit Property</a></li>
+								
+							</ul>
+						</li>
+
+						
+						{% endif %}
+
 						<li class="nav-item">
 							<a class="nav-link" href="{{ url_for('properties_views.map_page') }}">Map</a>
 						</li>
