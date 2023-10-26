@@ -289,6 +289,9 @@ def edit_property(prop_id):
             # save the approval form to the respective folder
             approval.save(approval_form_file_path)
 
+            # set up the upload folder for images
+            app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
+
             # check if there is any images uploaded
             if form.image.data:
                 # new images were submitted
@@ -298,11 +301,24 @@ def edit_property(prop_id):
 
                 # delete the old images from storage older
                 for image in image_name_list:
-                    pass
-                    # if os.path.exists(image.strip()):
-                        # os.remove(image.strip())
+                    old_image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], image.strip())
+                    if os.path.exists(old_image_file_path):
+                        # delete the image from folder
+                        os.remove(old_image_file_path)
 
                 # add the new images to the folder
+                image_url = ""
+                for i, image in enumerate(form.image.data):
+                    image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + f"_{i}.png")
+                    image.save(image_form_file_path)
+                    image_url += reformatted_filename + f"_{i}.png" + ", "
+
+                # remove the final comma added
+                image_url = image_url[:len(image_url) - 2]
+
+                #update the image_url column in the database
+                current_images.image_url = image_url
+                db.session.commit()
 
             # flash success message
             flash("Property info updated", "success")
