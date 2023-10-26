@@ -28,11 +28,11 @@ def landing_page():
     return render_template("homepage.html", user=current_user)
 
 
-@views.route("/admin")
-@login_required
-@admin_required
-def admin_panel():
-    return render_template("homepage.html", user=current_user)  # temp
+# @views.route("/admin")
+# @login_required
+# @admin_required
+# def admin_panel():
+#     return render_template("homepage.html", user=current_user)  # temp
 
 
 APPROVAL_FORM_ALLOWED_EXTENSIONS = {"pdf"}
@@ -150,6 +150,7 @@ def register_property():
 
 # requires @admin annotation but will add it later after hard coding in the admin account
 @login_required
+@admin_required
 @views.route("/manage_approval_document", methods=["GET", "POST"])
 def manage_approval_document():
     form = forms.ManageApprovalForm()
