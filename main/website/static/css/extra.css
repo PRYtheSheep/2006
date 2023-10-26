@@ -4,12 +4,33 @@
     padding:20px;
     margin:20px;
 }
-nav {
+/* nav {
     background-color:#df6951;
-}
+} */
 .nav-item
 {
     font-family: Poppins, sans-serif;
     font-size: 25px;
     font-weight:300;
+}
+
+.nav-link {
+    color: #fff;
+}
+
+.nav-button {
+    background-color: #df6951;
+    border-radius: 20px;
+    padding: 15px!important;
+    margin: 10px;
+    color: #fff;
+
+}
+
+.header-text {
+    color: #fff;
+    backdrop-filter: blur(1px);
+    font-family: Poppins, sans-serif;
+    font-size: 50px;
+    font-weight: 300;
 }

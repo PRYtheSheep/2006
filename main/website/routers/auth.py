@@ -9,7 +9,6 @@ from ..models import User, AccountRecovery
 from datetime import datetime
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
-from urllib.parse import urlparse
 
 auth = Blueprint('auth',__name__)
 
@@ -107,7 +106,7 @@ def forget_password(reset_id):
     if not account_recovery:
         flash("No such password request exist", 'error')
         return redirect(url_for("auth.forget_password_request"))
-    elif ((datetime.now() - account_recovery.created_at).seconds / 60 < 15):  # link expired, more than 15 mins
+    elif ((datetime.now() - account_recovery.created_at).seconds / 60 > 15):  # link expired, more than 15 mins
         flash("Password reset link has expired", 'error')
         return redirect(url_for("auth.forget_password_request"))
     else:

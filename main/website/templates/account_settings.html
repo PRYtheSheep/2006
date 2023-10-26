@@ -2,6 +2,10 @@
 
 {% block title %}Account Settings{% endblock title %}
 
+{% block page_name %}
+Account Settings
+{% endblock page_name %}
+
 {% block content %}
 {% from "includes/formhelper.html" import render_field %}
 {% if setting_type and form.errors %}
@@ -15,11 +19,6 @@
 	{% endfor %}
 {% endif %}
 <div class="container pt-4">
-	<div class="py-3 mb-4 border-bottom">
-		<div class="container d-flex flex-wrap justify-content-center">
-			<p class="fs-4 d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">Account Settings</p>
-		</div>
-	</div>
 	<div class="row">
 		<div class="col-sm-3">
 			<a href='{{ url_for("account_views.account_settings", setting_type="account") }}' class="btn 
@@ -28,7 +27,7 @@
 			{% else %}
 			btn-info	
 			{% endif %}
-			">Account Information</a>
+			">Change Username</a>
 			<hr/>
 			<a href='{{ url_for("account_views.account_settings", setting_type="password") }}' class="btn 
 			{% if not setting_type or setting_type == 'account' %}

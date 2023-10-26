@@ -16,7 +16,8 @@ class User(db.Model, UserMixin):
     account_type = db.Column(db.String(150))
     properties_owned = db.relationship('Property')
     properties_favourited = db.relationship('PropertyFavourites')
-
+    notifications = db.relationship('Notifications')
+    
     # override class used in flask_login
     def get_id(self):
         return (self.user_id)
@@ -197,3 +198,10 @@ class AccountRecovery(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     recovery_string = db.Column(db.String(150), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.now())
+
+class Notifications(db.Model):
+    notif_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
+    message = db.Column(db.String(150))
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    is_read = db.Column(db.Boolean, default=False)

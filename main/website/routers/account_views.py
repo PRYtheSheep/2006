@@ -50,3 +50,7 @@ def account_settings(setting_type=None):
         else:
             return render_template("404.html", user=current_user)
 
+@account_views.route('/notifications')
+@login_required
+def notifications_page():
+    return render_template("notifications_page.html", user=current_user)
