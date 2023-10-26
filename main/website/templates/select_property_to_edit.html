@@ -3,6 +3,7 @@
 {% block title %}Register{% endblock title %}
 
 {% block content %}
+<div class="container pt-5">
   {% from "includes/formhelper.html" import render_field %}
     {% if form.errors %}
         {% for field_name, field_errors in form.errors|dictsort if field_errors %}
@@ -14,18 +15,24 @@
             {% endfor %}
         {% endfor %}
   {% endif %}
+  <div class="row text-center">
+    <h1>Edit Property</h1>
+  </div>
+
   <div class="row">
-      <div class="col-md-8">
+      <div class="col-lg-6 offset-lg-3">
           <form action="{{ url_for('views.select_property_to_edit') }}" method="post" enctype="multipart/form-data">
             {{ form.csrf_token }}
             <div class="form-group">
               {{ render_field(form.prop_id, class_="form-control") }}
             </div>
-              <input type="submit" class="btn btn-primary" value="Register">
+            <br>
+              <input type="submit" class="btn btn-primary" value="Edit">
             </div>
         </form>
       </div>
   </div>
+</div>
 {% endblock content %}
 
 {% block bottomScript %}
