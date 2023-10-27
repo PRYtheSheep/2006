@@ -25,7 +25,11 @@ def set_app(app1):
 
 @views.route("/")
 def landing_page():
-    return render_template("homepage.html", user=current_user)
+    latest_properties = Property.query.filter_by(is_approved=1).order_by(Property.created_at.desc()).limit(3).all()
+    latest_property_images = []
+    for property in latest_properties:
+        latest_property_images.append(PropertyImages.query.filter_by(property_id=property.property_id).first())
+    return render_template("homepage.html", user=current_user, latest_properties=latest_properties, latest_property_images=latest_property_images)
 
 
 # @views.route("/admin")

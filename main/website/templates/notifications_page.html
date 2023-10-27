@@ -2,21 +2,36 @@
 
 {% block title %}Notifications{% endblock title %}
 
-{% block head_block %}
-
-{% endblock head_block %}
-
 {% block page_name %}
 Notifications
 {% endblock page_name %}
 
 {% block content %}
-{% from "includes/formhelper.html" import render_field %}
+{% from "includes/pagination.html" import render_pagination %}
 <div class="container pt-5">
-    
+    <div class="row">
+        {% if all_notifications.items %}
+        {% for notif in all_notifications  %}
+        <div class="col-12">
+            <div class="alert alert-{{ notif.type }}" role="alert">
+                <h4 class="alert-heading">{{ notif.title }}</h4>
+                <p>{{ notif.message }}</p>
+                <hr>
+                <p class="mb-0">{{ notif.created_at.strftime('%d %b %Y %H:%M') }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="col-12">
+            {{ render_pagination(all_notifications, 'account_views.notifications_page') }}
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <h4 class="alert-heading">No notifications</h4>
+                <p>You have no notifications.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock content %}
-
-{% block bottomScript %}
-
-{% endblock bottomScript %}

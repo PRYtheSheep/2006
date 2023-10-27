@@ -202,6 +202,7 @@ class AccountRecovery(db.Model):
 class Notifications(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
+    title = db.Column(db.String(150))
     message = db.Column(db.String(150))
     created_at = db.Column(db.DateTime, default=datetime.now())
     is_read = db.Column(db.Boolean, default=False)

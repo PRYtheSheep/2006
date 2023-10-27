@@ -1,18 +1,18 @@
 {% extends "includes/layout.html" %}
 
 {% block head_block %}
-    <!-- <style>
-        .card {
-            border-radius: 36px;
-            box-shadow: 0px 1.85185px 3.14815px 0px rgba(0, 0, 0, 0),
-            0px 8.14815px 6.51852px 0px rgba(0, 0, 0, 0.01),
-            0px 20px 13px 0px rgba(0, 0, 0, 0.01),
-            0px 38.51852px 25.48148px 0px rgba(0, 0, 0, 0.01),
-            0px 64.81481px 46.85185px 0px rgba(0, 0, 0, 0.02),
-            0px 100px 80px 0px rgba(0, 0, 0, 0.02);
-            padding: 10px;
-        }
-    </style> -->
+<!-- <style>
+    .card {
+        border-radius: 36px;
+        box-shadow: 0px 1.85185px 3.14815px 0px rgba(0, 0, 0, 0),
+        0px 8.14815px 6.51852px 0px rgba(0, 0, 0, 0.01),
+        0px 20px 13px 0px rgba(0, 0, 0, 0.01),
+        0px 38.51852px 25.48148px 0px rgba(0, 0, 0, 0.01),
+        0px 64.81481px 46.85185px 0px rgba(0, 0, 0, 0.02),
+        0px 100px 80px 0px rgba(0, 0, 0, 0.02);
+        padding: 10px;
+    }
+</style> -->
 {% endblock head_block %}
 {% block page_name %}
 Home
@@ -25,19 +25,19 @@ Home
         <div class="col-2">
             <img src="{{url_for('static', filename='/images/advLogo-1.png') }}" alt="advLogo-1" class="img-fluid"/>
         </div>
-
+        
         <div class="col-2">
             <img src="{{url_for('static', filename='/images/advLogo-2.png') }}" alt="advLogo-2" class="img-fluid"/>
         </div>
-
+        
         <div class="col-2">
             <img src="{{url_for('static', filename='/images/advLogo-3.png') }}" alt="advLogo-3" class="img-fluid"/>
         </div>
-
+        
         <div class="col-2">
             <img src="{{url_for('static', filename='/images/advLogo-4.png') }}" alt="advLogo-4" class="img-fluid"/>
         </div>
-
+        
         <div class="col-2">
             <img src="{{url_for('static', filename='/images/advLogo-5.png') }}" alt="advLogo-5" class="img-fluid"/>
         </div>
@@ -54,9 +54,8 @@ Home
             <div class="card" style="width: 18rem;">
                 <img src="{{url_for('static', filename='/images/hp-tour-guide.png') }}" class="card-img-top" style="width:87px;align-self: center; padding-top:5px;" alt="...">
                 <div class="card-body">
-                <h5 class="card-title">Fully Furnished</h5>
-                <p class="card-text">We go the extra mile to ensure that all our flats are furnished
-                    with basic furnitures.</p>
+                    <h5 class="card-title">Fully Furnished</h5>
+                    <p class="card-text">We go the extra mile to ensure that all our flats are furnished with basic furnitures.</p>
                 </div>
             </div>
         </div>
@@ -64,9 +63,8 @@ Home
             <div class="card" style="width: 18rem;">
                 <img src="{{url_for('static', filename='/images/hp-housekeeping.png') }}" class="card-img-top" style="width:87px;align-self: center; padding-top:5px;" alt="...">
                 <div class="card-body">
-                <h5 class="card-title">Weekly Housekeeping</h5>
-                <p class="card-text">Weekly Housekeeping can be arranged to ensure the tidiness
-                    and cleanliness of every flat.</p>
+                    <h5 class="card-title">Weekly Housekeeping</h5>
+                    <p class="card-text">Weekly Housekeeping can be arranged to ensure the tidiness and cleanliness of every flat.</p>
                 </div>
             </div>
         </div>
@@ -74,8 +72,8 @@ Home
             <div class="card" style="width: 18rem;">
                 <img src="{{url_for('static', filename='/images/hp-contract.png') }}" class="card-img-top" style="width:87px;align-self: center; padding-top:5px;" alt="...">
                 <div class="card-body">
-                <h5 class="card-title">Flexible monthly contracts</h5>
-                <p class="card-text">Book and cancel anytime, to suit your needs.</p>
+                    <h5 class="card-title">Flexible monthly contracts</h5>
+                    <p class="card-text">Book and cancel anytime, to suit your needs.</p>
                 </div>
             </div>
         </div>
@@ -83,93 +81,35 @@ Home
             <div class="card" style="width: 18rem;">
                 <img src="{{url_for('static', filename='/images/hp-maintainance.png') }}" class="card-img-top" style="width:87px;align-self: center; padding-top:5px;" alt="...">
                 <div class="card-body">
-                <h5 class="card-title">Regular Maintaince</h5>
-                <p class="card-text">Submit a maintaince request anytime and we’ll get it fixed!</p>
+                    <h5 class="card-title">Regular Maintaince</h5>
+                    <p class="card-text">Submit a maintaince request anytime and we’ll get it fixed!</p>
                 </div>
             </div>
         </div>
     </div>
     <hr/>
-    <div class="row text-center pb-5">
-        <div class="col-lg-4 mb-3 d-flex align-items-stretch">
+    <div class="row text-center pb-5 align-content-center">
+        {% for property in latest_properties %}
+        <div class="col-lg-4 mb-3 d-flex align-items-stretch content">
             <div class="card" style="width: 18rem;">
-                <img src="{{url_for('static', filename='/images/hp-room.png') }}" class="card-img-top" alt="...">
+                <img src="{{ url_for('properties_views.property_image_url', filename=latest_property_images[loop.index-1].image_url) }}" class="card-img-top" alt="...">
                 <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Description 1</p>
-                    <p class="card-text">Description 2</p>
+                    <h5 class="card-title">{{property.property_name}}</h5>
+                    <p class="card-text">{{property.block}} {{ property.street_name }} {{ property.building }}</p>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item">An item</li>
-                    <li class="list-group-item">A second item</li>
-                    <li class="list-group-item">A third item</li>
+                    <li class="list-group-item">Rent: ${{ property.monthly_rent }}/month</li>
+                    <!-- <li class="list-group-item">A second item</li>
+                    <li class="list-group-item">A third item</li> -->
                 </ul>
-                <div class="card-body">
-                <a href="#" class="card-link">Card link</a>
-                <a href="#" class="card-link">Another link</a>
-                </div>
                 <div class="card-footer">
-                    <button class="btn btn-warning">Book Now</button>
+                    <a class="btn btn-warning" href="{{ url_for('properties_views.map_page_info',property_id=property.property_id) }}">View More</a>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 mb-3 d-flex align-items-stretch">
-            <div class="card" style="width: 18rem;">
-                <img src="{{url_for('static', filename='/images/hp-room.png') }}" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Amount</p>
-                    <p class="card-text">Description</p>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">An item</li>
-                    <li class="list-group-item">A second item</li>
-                    <li class="list-group-item">A third item</li>
-                  </ul>
-                  <div class="card-body">
-                    <a href="#" class="card-link">Card link</a>
-                    <a href="#" class="card-link">Another link</a>
-                  </div>
-                  <div class="card-footer">
-                        <button class="btn btn-warning">Book Now</button>
-                  </div>
-            </div>
-        </div>
-        <div class="col-lg-4 mb-3 d-flex align-items-stretch">
-            <div class="card" style="width: 18rem;">
-                <img src="{{url_for('static', filename='/images/hp-room.png') }}" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Title</h5>
-                    <p class="card-text">Amount</p>
-                    <p class="card-text">Description</p>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">An item</li>
-                    <li class="list-group-item">A second item</li>
-                    <li class="list-group-item">A third item</li>
-                  </ul>
-                  <div class="card-body">
-                    <a href="#" class="card-link">Card link</a>
-                    <a href="#" class="card-link">Another link</a>
-                  </div>
-                  <div class="card-footer">
-                        <button class="btn btn-warning">Book Now</button>
-                  </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 
 {% endblock content %}
-
-
-<script>
-    function openForm() {
-        document.getElementById("myForm").style.display = "block";
-    }
-
-    function closeForm() {
-        document.getElementById("myForm").style.display = "none";
-    }
-</script>
 

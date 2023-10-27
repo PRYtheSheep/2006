@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, url_for, flash, redirect
+from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import login_required, current_user
 
 from .. import forms, db
-from ..models import User
+from ..models import User, Notifications
 from werkzeug.security import generate_password_hash, check_password_hash
 
 account_views = Blueprint('account_views', __name__)
@@ -52,5 +52,8 @@ def account_settings(setting_type=None):
 
 @account_views.route('/notifications')
 @login_required
-def notifications_page():
-    return render_template("notifications_page.html", user=current_user)
+def notifications_page(page=1):
+    all_notifications = db.paginate(db.select(Notifications).where(Notifications.user_id == current_user.user_id).order_by(Notifications.created_at.desc()), per_page=2)
+    if request.args.get('page'):
+        all_notifications = db.paginate(db.select(Notifications).where(Notifications.user_id == current_user.user_id).order_by(Notifications.created_at.desc()), per_page=2, page=int(request.args.get('page')))
+    return render_template("notifications_page.html", user=current_user, all_notifications=all_notifications)

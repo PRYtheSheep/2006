@@ -28,7 +28,7 @@
 <body>
 	<div class="header-img">
 		<div class="container">
-			<nav class="navbar navbar-expand-lg"  data-bs-theme="dark">
+			<nav class="navbar navbar-expand-lg">
 				<div class="container-fluid">
 					<a class="navbar-brand" href="{{ url_for('views.landing_page') }}">
 						<img src="{{url_for('static', filename='images/logo.png') }}" class="img-fluid"/>
@@ -41,27 +41,29 @@
 						<ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-center">
 							<li class="nav-item dropdown">
 								<a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-
 									<i class="fa-solid fa-clipboard-check"></i>
 									Actions
 								</a>
 								<ul class="dropdown-menu" aria-labelledby="notifDropdown">
-									<li class="dropdown-item">Notifications:</p>
-									{% if user.notifications %}
-									{% for notif in notifications|reverse if not notif.is_read %}
-
-										<a class="dropdown-item">{{ user.notifications[i] }}</a><br>
-
-									{% endfor %}
-									{% else %}
-
-										<p class="dropdown-item">- None -</p>
-
-									{% endif %}
-							</li>
-									<li><a class='dropdown-item' href="{{ url_for('account_views.notifications_page') }}">View all notifications</a></li>
+									<li class="dropdown-item">Notifications:</li>
 									<li><hr class="dropdown-divider"></li>
+										{% if user.notifications %}
+										{% for notif in user.notifications|reverse %}
+										{% if loop.index0<3 %}
+										<li class="dropdown-item notif-msg" style="cursor: pointer;">{{ notif.title }} <br> {{ notif.created_at.strftime('%d %b %Y %H:%M') }}</li>
+										{% endif %}
+										{% endfor %}
+										{% else %}
+										
+										<li class="dropdown-item">- None -</li>
+										
+										{% endif %}
+									</li>
+									<li><hr class="dropdown-divider"></li>
+									<li><a class='dropdown-item' href="{{ url_for('account_views.notifications_page') }}">View all notifications</a></li>
+									
 									{% if user.account_type == "admin" %}
+									<li><hr class="dropdown-divider"></li>
 									<li>
 										<a class="dropdown-item" href="{{ url_for('views.manage_approval_document') }}">Manage Approval Document</a>
 									</li>
@@ -79,7 +81,7 @@
 									
 								</ul>
 							</li>
-
+							
 							{% if user.account_type == "landlord" %}
 							<li class="nav-item dropdown">
 								<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

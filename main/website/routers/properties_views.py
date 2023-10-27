@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, send_from_directory, request, current_app
 from flask_login import login_required, current_user
 import os
-from .. import forms, db, models
+from .. import forms, db
 from ..models import User, Property, PropertyFavourites, PropertyImages
 from datetime import datetime
 import requests
@@ -218,26 +218,29 @@ def map_page_info(property_id=None):
                         
                         # property location
                         if i == 0:
-                            # iwt = "%3Cp%3E" + property.block + "%20" + property.street_name.replace(" ","%20") + "%20" + property.building.replace(" ","%20") + "%3C%2Fp%3E"
-                            # iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
-                            map_url += "&marker=postalcode:{}!icon:fa-hotel!colour:red!rType:{}!rDest:{},{}".format(property.postal,leg['mode'],leg['to']['lat'], leg['to']['lon'])
+                            iwt = "%3Cp%3E" + property.block + "%20" + property.street_name.replace(" ","%20") + "%20" + property.building.replace(" ","%20") + "%3C%2Fp%3E"
+                            iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
+                            map_url += "&marker=postalcode:{}!icon:fa-hotel!iwt:{}!colour:red!rType:{}!rDest:{},{}".format(property.postal,iwt,leg['mode'],leg['to']['lat'], leg['to']['lon'])
+                            #map_url += "&marker=postalcode:{}!icon:fa-hotel!colour:red!rType:{}!rDest:{},{}".format(property.postal,leg['mode'],leg['to']['lat'], leg['to']['lon'])
 
                         # route transfers
                         else:
-                            # iwt = "%3Cp%3E" + leg['from']['name'].replace(" ","%20") + "%3C%2Fp%3E"
-                            # iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
+                            iwt = "%3Cp%3E" + leg['from']['name'].replace(" ","%20") + "%3C%2Fp%3E"
+                            iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
                             if leg['mode'] == 'WALK':
                                 fa = "fa-user"
                             elif leg['mode'] == 'BUS':
                                 fa = "fa-bus"
                             elif leg['mode'] == 'SUBWAY':
                                 fa = "fa-subway"
-                            map_url += "&marker=latLng:{},{}!icon:{}!colour:red!rType:{}!rDest:{},{}".format(leg['from']['lat'], leg['from']['lon'],fa,leg['mode'],leg['to']['lat'], leg['to']['lon'])
+                            map_url += "&marker=latLng:{},{}!icon:{}!iwt:{}!colour:red!rType:{}!rDest:{},{}".format(leg['from']['lat'], leg['from']['lon'],fa,iwt,leg['mode'],leg['to']['lat'], leg['to']['lon'])
+                            #map_url += "&marker=latLng:{},{}!icon:{}!colour:red!rType:{}!rDest:{},{}".format(leg['from']['lat'], leg['from']['lon'],fa,leg['mode'],leg['to']['lat'], leg['to']['lon'])
 
                     # target location
-                    # iwt = "%3Cp%3E" + target_data['results'][0]['ADDRESS'].replace(" ","%20") + "%3C%2Fp%3E"
-                    # iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
-                    map_url += "&marker=postalcode:{}!icon:fa-star!colour:red&popupWidth=200".format(target_data['results'][0]['POSTAL'])
+                    iwt = "%3Cp%3E" + target_data['results'][0]['ADDRESS'].replace(" ","%20") + "%3C%2Fp%3E"
+                    iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
+                    map_url += "&marker=postalcode:{}!icon:fa-star!iwt:{}!colour:red&popupWidth=200".format(target_data['results'][0]['POSTAL'],iwt)
+                    #map_url += "&marker=postalcode:{}!icon:fa-star!colour:red&popupWidth=200".format(target_data['results'][0]['POSTAL'])
                     map_urls.append(map_url)
         
         landlord = User.query.filter_by(user_id=property.user_id).first()
@@ -283,7 +286,6 @@ def favourited_properties():
     return render_template("favourite_properties_page.html", user=current_user, property_list=property_list, property_images=property_images)
 
 @properties_views.route("/storage/<path:filename>")
-@login_required
 def property_image_url(filename):
     path = (os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'website', 'storage', 'property_images'))
     return send_from_directory(path, filename)
