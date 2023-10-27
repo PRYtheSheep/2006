@@ -1,8 +1,11 @@
 {% extends "includes/layout.html" %}
 
 {% block title %}Register{% endblock title %}
-
+{% block page_name %}
+Edit Property
+{% endblock page_name %}
 {% block content %}
+<div class="container pt-5">
   {% from "includes/formhelper.html" import render_field %}
     {% if form.errors %}
         {% for field_name, field_errors in form.errors|dictsort if field_errors %}
@@ -14,43 +17,65 @@
             {% endfor %}
         {% endfor %}
   {% endif %}
+  <div class="row text-center">
+    <h1>Edit Property</h1>
+  </div>
   <div class="row">
-      <div class="col-md-8">
+      <div class="col-lg-6 offset-lg-3">
           <form action="{{ url_for('views.edit_property', prop_id=prop_id) }}" method="post" enctype="multipart/form-data">
             {{ form.csrf_token }}
             <div class="form-group">
               {{ render_field(form.monthly_rent, class_="form-control") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.num_bedrooms, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.gender, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.furnishing, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.rent_approval_date, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.lease_term, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.negotiable, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.image, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div class="form-group">
               {{ render_field(form.approval_form, class_="form-control form-select") }}
             </div>
+            <br>
+
             <div>
               <input type="submit" class="btn btn-primary" value="Register">
             </div>
         </form>
       </div>
   </div>
+</div>
 {% endblock content %}
 
 {% block bottomScript %}

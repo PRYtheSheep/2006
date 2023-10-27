@@ -53,7 +53,7 @@
                 {% else %}
                     fa-regular
                 {% endif %} 
-                fa-heart" style="cursor: pointer;"></i>
+                fa-heart" style="cursor: pointer; color:#df6951;"></i>
             </h1>
             <p class="fs-4">{{ property.property_description }}</p>
         </div>
@@ -188,11 +188,11 @@
         if (this.classList.contains("fa-regular")) {
             this.classList.remove("fa-regular");
             this.classList.add("fa-solid");
-            //favHeart.style.color = "red";
+            favHeart.style.color = '#df6951';
         } else {
             this.classList.remove("fa-solid");
             this.classList.add("fa-regular");
-            //favHeart.style.color = "black";
+            favHeart.style.color = '#df6951';
         }
         $.post("{{ url_for('properties_views.favourite_property',property_id=property.property_id) }}", function(data, status) {
             console.log(data);

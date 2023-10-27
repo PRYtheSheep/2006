@@ -34,3 +34,18 @@
     font-size: 50px;
     font-weight: 300;
 }
+.querymapflex{
+    display:flex;
+}
+.querymapflex2{
+    display: inline-block;
+    align-self: flex-end;
+    padding-left:20px;
+}
+.form-group{
+    font-weight:bold;
+}
+.btn-primary{
+    background-color:#df6951;
+    border-color: #df6951;;
+}
