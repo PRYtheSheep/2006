@@ -40,17 +40,31 @@
 						<ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-center">
 							<li class="nav-item dropdown">
 								<a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-									<i class="fa-solid fa-bell"></i>
+
+									<i class="fa-solid fa-clipboard-check"></i>
+									Actions
 								</a>
 								<ul class="dropdown-menu" aria-labelledby="notifDropdown">
+									<li class="dropdown-item">Notifications:</p>
 									{% if user.notifications %}
 									{% for notif in notifications|reverse if not notif.is_read %}
-									<li><a class="dropdown-item">{{ user.notifications[i] }}</a></li> 
+
+										<a class="dropdown-item">{{ user.notifications[i] }}</a><br>
+
 									{% endfor %}
 									{% else %}
-									<li><p class="dropdown-item">No new notifications</p></li>
+
+										<p class="dropdown-item">- None -</p>
+
 									{% endif %}
+							</li>
 									<li><a class='dropdown-item' href="{{ url_for('account_views.notifications_page') }}">View all notifications</a></li>
+									<li><hr class="dropdown-divider"></li>
+									{% if user.account_type == "admin" %}
+									<li>
+										<a class="dropdown-item" href="{{ url_for('views.manage_approval_document') }}">Manage Approval Document</a>
+									</li>
+									{% endif %}
 								</ul>
 							</li>
 							<li class="nav-item dropdown">
@@ -64,11 +78,7 @@
 									
 								</ul>
 							</li>
-							{% if user.account_type == "admin" %}
-							<li class="nav-item">
-								<a class="nav-link" href="{{ url_for('views.manage_approval_document') }}">Manage Approval Document</a>
-							</li>
-							{% endif %}
+
 							{% if user.account_type == "landlord" %}
 							<li class="nav-item dropdown">
 								<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
