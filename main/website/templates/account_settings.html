@@ -41,12 +41,14 @@ Account Settings
 			{% if setting_type == 'account' %}
 			<form action="{{ url_for('account_views.account_settings', setting_type='account') }}" method="post">
 				{{ form.csrf_token }}
-				<div class="form-group form-box">
+				<div class="form-group">
 					{{ render_field(form.username, class_="form-control", value=user.username) }}
 				</div>
-				<div class="form-group form-box">
+				<br>
+				<div class="form-group">Confirm by entering your current
 					{{ render_field(form.password, class_="form-control") }}
 				</div>
+				<br>
 				<div>
 					<input type="submit" class="btn btn-primary" value="Update Information">
 				</div>
@@ -63,7 +65,7 @@ Account Settings
 				<div class="form-group form-box">
 					{{ render_field(form.confirm_new_password, class_="form-control") }}
 				</div>
-				<div class="form-group">
+				<div class="form-group" style="padding-left: 20px;">
 					<input type="submit" class="btn btn-primary" value="Change Password">
 				</div>
 			</form>

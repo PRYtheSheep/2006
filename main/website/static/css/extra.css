@@ -7,11 +7,13 @@
 /* nav {
     background-color:#df6951;
 } */
+
 .nav-item
 {
     font-family: Poppins, sans-serif;
     font-size: 25px;
     font-weight:300;
+    padding-left: 10px;
 }
 
 .nav-link {
@@ -21,10 +23,10 @@
 .nav-button {
     background-color: #df6951;
     border-radius: 20px;
-    padding: 15px!important;
+    padding: 17px!important;
     margin: 10px;
     color: #fff;
-
+    font-size: 20px;
 }
 
 .header-text {
@@ -48,4 +50,7 @@
 .btn-primary{
     background-color:#df6951;
     border-color: #df6951;;
+}
+.button_padding{
+    padding-left: 20px;
 }
