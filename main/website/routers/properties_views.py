@@ -100,7 +100,8 @@ def map_page():
         lease_term = filters_form.lease_term.data
         negotiable = filters_form.negotiable.data
         flat_type = filters_form.flat_type.data
-     
+        gender = filters_form.gender.data
+
 
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
             address
@@ -131,7 +132,8 @@ def map_page():
                                and num['furnishing'] == furnish_status
                                and num['lease_term'] == lease_term
                                and num['negotiable_pricing'] == negotiable
-                               and num['flat_type'] == flat_type,
+                               and num['flat_type'] == flat_type
+                               and num['gender'] in gender,
 
                                initial_property_list))  #default filters, distance 0-3km, monthly_rent 0-10000sgd
         

@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import Form, StringField, IntegerField, PasswordField, validators, RadioField, \
     SelectField, ValidationError, FileField, \
-    SubmitField, TextAreaField, DateField, FloatField, MultipleFileField
+    SubmitField, TextAreaField, DateField, FloatField, MultipleFileField,SelectMultipleField, widgets
 
 
 class RegistrationForm(FlaskForm):
@@ -121,6 +121,11 @@ class FiltersForm(FlaskForm):
     lease_term = SelectField('Lease Term', choices=['1 year','2 years', '3 years', 'short term', 'flexible'], validate_choice=False)
     negotiable = SelectField('Negotiable', choices=['yes','no'], validate_choice=False)
     flat_type = SelectField('Flat Type', choices = ['5-ROOM', '4-ROOM', '3-ROOM', 'EXECUTIVE', '2-ROOM'],validate_choice = False)
+    gender = SelectMultipleField('Gender', choices=[
+        ('female only', 'female'),
+        ('male only', 'male'),
+        ('mixed', 'mixed'),
+    ],validate_choice=False)
 
 
 class SelectPropertyToEdit(FlaskForm):
