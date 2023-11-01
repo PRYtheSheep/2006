@@ -188,10 +188,12 @@ class PropertyImages(db.Model):
 
     @staticmethod
     def reject_property_images(prop_id):
+        current_image = PropertyImages.query.filter_by(property_id = prop_id).first()
+        current_image_url = current_image.image_url
         statement = f"DELETE FROM property_images WHERE property_id = {prop_id}"
         db.session.execute(text(statement))
         db.session.commit()
-
+        return current_image_url
 
 class AccountRecovery(db.Model):
     ar_id = db.Column(db.Integer, primary_key=True)

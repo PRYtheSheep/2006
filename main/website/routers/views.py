@@ -188,8 +188,30 @@ def manage_approval_document():
 
         else:
             # selection is "No"
-            PropertyImages.reject_property_images(prop_id)
+            # delete the images from database
+            current_image_url = PropertyImages.reject_property_images(prop_id)
+
+            # delete the proeprty from database
             Property.reject_property(prop_id)
+
+            # delete the images
+            image_name_list = current_image_url.split(",")
+            app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
+            for image in image_name_list:
+                old_image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], image.strip())
+                if os.path.exists(old_image_file_path):
+                    # delete the image from folder
+                    os.remove(old_image_file_path)
+
+            app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
+            reformatted_filename = f"{prop_id}"
+            approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + ".pdf")
+
+            # delete the old approval form
+            if os.path.exists(approval_form_file_path):
+                os.remove(approval_form_file_path)
+
+
             flash("Property rejected, deleted from database", "error")
 
     return render_template("manage_approval.html", user=current_user, form=form)
