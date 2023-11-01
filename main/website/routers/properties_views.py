@@ -14,75 +14,47 @@ properties_views = Blueprint('properties_views', __name__)
 @properties_views.route("/map", methods=['GET', 'POST'])
 @login_required
 def map_page():
-    result_list, property_list = [], []
+    property_list = []
     target_address = []
     form = forms.TargetLocationForm()
-    dynamic_form = forms.DynamicForm()
     filters_form = forms.FiltersForm()
     target = [1.369635, 103.803680]  # middle of sg coords
-    if form.validate_on_submit():
+    if form.validate_on_submit() and form.submit_target_location_form.data:
+        print("form submitted")
+        print(filters_form.year_built_max.data)
         target_location = form.target_location.data
-        url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum=1".format(
-            target_location  # 639798
-        )
-        response = requests.request("GET", url)
-        data = response.json()
-        pages = data['totalNumPages']
-
-        for item in data['results']:
-            result_list.append((item['ADDRESS'], item['ADDRESS']))
-        # print(result_list)
-
-        for i in range(2, pages + 1):
-            url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=N&getAddrDetails=Y&pageNum={}".format(
-                target_location,
-                i
-            )
-            response = requests.request("GET", url)
-            data = response.json()
-            for item in data['results']:
-                result_list.append((item['ADDRESS'], item['ADDRESS']))
-
-        dynamic_form.address.choices = result_list
-
-        return render_template("query_map_page.html", user=current_user, form=form, result_list=result_list,p_list = [],
-                               dynamic_form=dynamic_form, filters_form = filters_form,property_list=[],
-                               target=target, target_address = [])
-
-    elif dynamic_form.validate_on_submit() and not filters_form.validate_on_submit():
-        target_location = dynamic_form.address.data
-        filters_form.address.data = target_location
+        filters_form.target_location.data = target_location
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
             target_location
         )
         response = requests.request("GET", url)
+        if response.status_code == 502:
+            flash("OneMap API is down. Please try again later.", category="error") 
+            return redirect(url_for("properties_views.map_page"))
+        
         data = response.json()
         #data['results'] may be empty
-        if (len(data['results']) == 0):
-            # Show an alert with the error message and navigate back
-            error_message = "Invalid address, please select another address."
-            return f"<script>alert('{error_message}'); history.go(-1);</script>"
-
+        if not data['results']:
+            # Show an alert with the error message
+            flash("Invalid address, please select another address", category="error") 
+            return redirect(url_for("properties_views.map_page"))
+        #print(data['results'])
         address_details = data['results'][0]
         target_address = address_details
-        # print(address_details)
 
         # query into db for properties
-        initial_property_list = Property.query_(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
-        # print(f"initial list {initial_property_list}")
-        # print(f"length is {len(property_list)}")
-        # print(property_list[0]['distance'])
-        filtered = list(filter(lambda num: num['distance'] < 10 # testing at 10
-                               and num['monthly_rent'] < 10000,
-                               initial_property_list))  #default filters, distance 0-3km, monthly_rent 0-10000sgd
-        # print(len(filtered))
-        # print(filtered)
-        return render_template("query_map_page.html", user=current_user, form=form, result_list=result_list,p_list = initial_property_list,
-                               dynamic_form=dynamic_form,filters_form = filters_form, property_list=filtered,
+        filtered = Property.query_and_filter_v2(float(address_details['LATITUDE']), float(address_details['LONGITUDE']))
+
+        return render_template("query_map_page.html", user=current_user, form=form,
+                               filters_form = filters_form, property_list=filtered,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])],target_address = target_address)
-    elif filters_form.validate_on_submit():
-        
-        address = filters_form.address.data
+    elif filters_form.validate_on_submit() and filters_form.submit_filters_form.data:
+        print("filters form submitted")
+        if form.target_location.data == None or form.target_location.data == "":
+            flash("Please search for a target location first", category="error") 
+            return redirect(url_for("properties_views.map_page"))
+
+        target_location = filters_form.target_location.data
         distance_min = filters_form.distance_min.data
         distance_max = filters_form.distance_max.data
         monthly_rent_max = filters_form.monthly_rent_max.data
@@ -96,15 +68,32 @@ def map_page():
         year_built_max = filters_form.year_built_max.data
         floor_level_min = filters_form.floor_level_min.data
         floor_level_max = filters_form.floor_level_max.data
-        furnish_status = filters_form.furnish_status.data
-        lease_term = filters_form.lease_term.data
-        negotiable = filters_form.negotiable.data
-        flat_type = filters_form.flat_type.data
-        gender = filters_form.gender.data
-
-
+        furnish_status = filters_form.furnish_status.data if filters_form.furnish_status.data else ['fully furnished', 'partially furnished', 'not furnished']
+        lease_term = filters_form.lease_term.data if filters_form.lease_term.data else ['1 year','2 years','3 years','short term','flexible']
+        negotiable = filters_form.negotiable.data if filters_form.negotiable.data else ['yes', 'no']
+        flat_type = filters_form.flat_type.data if filters_form.flat_type.data else ['EXECUTIVE', '1-ROOM', '2-ROOM', '3-ROOM', '4-ROOM', '5-ROOM']
+        gender = filters_form.gender.data if filters_form.gender.data else ['female','male','mixed']
+        # print(
+        #       distance_min,
+        #       distance_max,
+        #       monthly_rent_max,
+        #       floor_size_min,
+        #       floor_size_max,
+        #       num_of_bedrooms_min,
+        #       num_of_bedrooms_max,
+        #       ppsm_min,
+        #       ppsm_max,
+        #       year_built_min,
+        #       year_built_max,
+        #       floor_level_min,
+        #       floor_level_max,
+        #       furnish_status,
+        #       lease_term,
+        #       negotiable,
+        #       flat_type,
+        #       gender)
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
-            address
+            target_location
         )
         response = requests.request("GET", url)
         data = response.json()
@@ -113,38 +102,35 @@ def map_page():
         # print(address_details)
 
         # query into db for properties
-        initial_property_list = Property.query_(float(address_details['LATITUDE']), float(address_details['LONGITUDE']), [])
-        # print(len(property_list))
-        # print(property_list[0]['distance'])
-        filtered = list(filter(lambda num: num['distance'] > distance_min
-                               and num['distance'] < distance_max
-                               and num['monthly_rent'] < monthly_rent_max
-                               and num['number_of_bedrooms'] > num_of_bedrooms_min
-                               and num['number_of_bedrooms'] < num_of_bedrooms_max
-                               and num['floorsize'] > floor_size_min
-                               and num['floorsize'] < floor_size_max
-                               and num['price_per_square_metre'] > ppsm_min
-                               and num['price_per_square_metre'] < ppsm_max
-                               and num['year_built'] > year_built_min
-                               and num['year_built'] < year_built_max
-                               and num['floor_level'] > floor_level_min
-                               and num['floor_level'] < floor_level_max
-                               and num['furnishing'] == furnish_status
-                               and num['lease_term'] == lease_term
-                               and num['negotiable_pricing'] == negotiable
-                               and num['flat_type'] == flat_type
-                               and num['gender'] in gender,
+        filtered = Property.query_and_filter_v2(
+            input_latitude=float(address_details['LATITUDE']), 
+            input_longitude=float(address_details['LONGITUDE']),
+            min_distance=distance_min,
+            max_distance=distance_max,
+            max_rent=monthly_rent_max,
+            min_floor_size=floor_size_min,
+            max_floor_size=floor_size_max,
+            min_bedrooms=num_of_bedrooms_min,
+            max_bedrooms=num_of_bedrooms_max,
+            min_ppsm=ppsm_min,
+            max_ppsm=ppsm_max,
+            min_year_built=year_built_min,
+            max_year_built=year_built_max,
+            min_floor_level=floor_level_min,
+            max_floor_level=floor_level_max,
+            furnish_status=furnish_status,
+            lease_term=lease_term,
+            is_negotiable=negotiable,
+            flat_type=flat_type,
+            gender=gender
+        )
 
-                               initial_property_list))  #default filters, distance 0-3km, monthly_rent 0-10000sgd
-        
-
-
-        return render_template("query_map_page.html", user=current_user, form=form, result_list=result_list,
-                               dynamic_form=dynamic_form, filters_form = filters_form,property_list=filtered,target_address = target_address,
+        return render_template("query_map_page.html", user=current_user, form=form,
+                               filters_form = filters_form,property_list=filtered,target_address = target_address,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])])
 
-    return render_template("query_map_page.html", user=current_user, form=form, result_list=result_list,
-                           dynamic_form=dynamic_form, filters_form = filters_form,property_list=property_list,
+    return render_template("query_map_page.html", user=current_user, form=form,
+                           filters_form = filters_form,property_list=property_list,
                            target=target,target_address = target_address)
 
 
@@ -168,6 +154,9 @@ def map_page_info(property_id=None):
                 args.get("t_address").replace("-", " ")
             ) 
             response = requests.request("GET", url)
+            if response.status_code == 502:
+                flash("OneMap API is down. Please try again later.", category="error") 
+                return redirect(url_for("properties_views.map_page"))
             data = response.json()
             form.target_location.data = data['results'][0]['ADDRESS'] # honestly, can just use address from args
 
@@ -178,6 +167,9 @@ def map_page_info(property_id=None):
                 target_location
             )
             response = requests.request("GET", url)
+            if response.status_code == 502:
+                flash("OneMap API is down. Please try again later.", category="error") 
+                return redirect(url_for("properties_views.map_page"))
             target_data = response.json()
             
             if len(target_data['results']) == 0:
@@ -203,6 +195,9 @@ def map_page_info(property_id=None):
             )
             headers = {"Authorization": current_app.config["ONE_MAP_TOKEN"]} # one map api key
             response = requests.request("GET", url, headers=headers)
+            if response.status_code == 502:
+                flash("OneMap API is down. Please try again later.", category="error") 
+                return redirect(url_for("properties_views.map_page"))
             route_data = response.json()
             if response.status_code == 400:
                 flash("No route found", category="error")

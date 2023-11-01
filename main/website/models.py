@@ -1,4 +1,5 @@
-from sqlalchemy import text
+import json
+from sqlalchemy import text, select
 
 from . import db
 from flask_login import UserMixin
@@ -39,7 +40,7 @@ class Property(db.Model):
     number_of_bedrooms = db.Column(db.Integer)
     floorsize = db.Column(db.Numeric(7, 2))
     price_per_square_metre = db.Column(db.Numeric(7, 2))
-    year_built = db.Column(db.Integer)
+    year_built = db.Column(db.Date)
     floor_level = db.Column(db.Integer)
     furnishing = db.Column(db.String(19))
     lease_term = db.Column(db.String(10))
@@ -127,6 +128,108 @@ class Property(db.Model):
         return returnlist
 
     @staticmethod
+    def query_and_filter_v2(
+            input_latitude,
+            input_longitude,
+            min_distance = 0,
+            max_distance = 5,
+            min_rent = 0,
+            max_rent = 10000,
+            min_bedrooms = 1,
+            max_bedrooms = 5,
+            min_floor_size = 0,
+            max_floor_size = 1000,
+            min_ppsm = 0,
+            max_ppsm = 200,
+            min_year_built = datetime(1970,1,1),
+            max_year_built = datetime(2030,1,1),
+            min_floor_level = 1,
+            max_floor_level = 20,
+            furnish_status = ['fully furnished', 'partially furnished', 'not furnished'],
+            lease_term = ['1 year','2 years','3 years','short term','flexible'],
+            min_approval_date = datetime(1970,1,1),
+            max_approval_date = datetime(2030,1,1),
+            is_negotiable = ['no', 'yes'],
+            flat_type = ['5-ROOM', '4-ROOM', '3-ROOM', '2-ROOM', 'EXECUTIVE'],
+            gender = ['male','female','mixed'],
+            is_approved = True,
+            is_visible = True
+            ):
+
+        """ returns a list of properties that satisfy the given criteria
+        
+        Keyword arguments:
+        input_latitude -- target latitude
+        input_longitude -- target longitude
+        min_distance -- minimum distance from target location
+        max_distance -- maximum distance from target location
+        min_rent -- minimum monthly rent
+        max_rent -- maximum monthly rent
+        min_bedrooms -- minimum number of bedrooms
+        max_bedrooms -- maximum number of bedrooms
+        min_floor_size -- minimum floor size
+        max_floor_size -- maximum floor size
+        min_ppsm -- minimum price per square metre
+        max_ppsm -- maximum price per square metre
+        min_year_built -- minimum year built
+        max_year_built -- maximum year built
+        min_floor_level -- minimum floor level
+        max_floor_level -- maximum floor level
+        furnish_status -- list of furnish status
+        lease_term -- list of lease term
+        min_approval_date -- minimum approval date
+        max_approval_date -- maximum approval date
+        is_negotiable -- list of negotiable pricing
+        flat_type -- list of flat type
+        is_approved -- is the property approved
+        is_visible -- is the property visible
+
+        Return: list of properties
+        """
+        
+        stmt = select('*').select_from(Property)\
+            .where(Property.monthly_rent >= min_rent, 
+                    Property.monthly_rent <= max_rent,
+                    Property.number_of_bedrooms >= min_bedrooms,
+                    Property.number_of_bedrooms <= max_bedrooms,
+                    Property.floorsize >= min_floor_size,
+                    Property.floorsize <= max_floor_size,
+                    Property.price_per_square_metre >= min_ppsm,
+                    Property.price_per_square_metre <= max_ppsm,
+                    Property.year_built >= min_year_built,
+                    Property.year_built <= max_year_built,
+                    Property.floor_level >= min_floor_level,
+                    Property.floor_level <= max_floor_level,
+                    Property.furnishing.in_(furnish_status),
+                    Property.lease_term.in_(lease_term),
+                    Property.rent_approval_date >= min_approval_date,
+                    Property.rent_approval_date <= max_approval_date,
+                    Property.negotiable_pricing.in_(is_negotiable),
+                    Property.flat_type.in_(flat_type),
+                    Property.gender.in_(gender),
+                    Property.is_approved == is_approved,
+                    Property.is_visible == is_visible)
+        
+        results = db.session.execute(stmt).mappings().all()
+    
+        result_list = [ dict(row) for row in results ]
+        filtered_list = []
+        
+        for result in result_list:
+            within_distance = Property.distance_from_property(input_latitude, input_longitude, min_distance, max_distance, result)
+            if within_distance:
+                result['latitude'] = float(result['latitude'])
+                result['longitude'] = float(result['longitude'])
+                result['price_per_square_metre'] = float(result['price_per_square_metre'])
+                result['floorsize'] = float(result['floorsize'])
+                result['rent_approval_date'] = result['rent_approval_date'].strftime("%Y-%m-%d")
+                result['created_at'] = result['created_at'].strftime("%Y-%m-%d")
+                result['year_built'] = result['year_built'].strftime("%Y-%m-%d")
+                filtered_list.append(result)
+
+        return filtered_list
+
+    @staticmethod
     def approve_property(prop_id):
         statement = f"UPDATE property SET is_approved = TRUE WHERE property_id = {prop_id}"
         db.session.execute(text(statement))
@@ -176,6 +279,32 @@ class Property(db.Model):
         prop.is_approved = False
         db.session.commit()
 
+    @staticmethod
+    def distance_from_property(inputlatitude, inputlongitude, min_distance, max_distance, property):
+        """returns true or false depending on whether the property is within the distance range
+        
+        Keyword arguments:
+        inputlatitude -- target latitude
+        inputlongitude -- target longitude
+        min_distance -- minimum distance from target location
+        max_distance -- maximum distance from target location
+        property -- property object
+
+        Return: boolean
+        """
+        
+        latitude1, longitude1 = float(property['latitude']) * (math.pi / 180), float(property['longitude']) * (math.pi / 180)
+        latitude2, longitude2 = inputlatitude * (math.pi / 180), inputlongitude * (math.pi / 180)
+        distance = math.acos(
+            math.sin(latitude1) * math.sin(latitude2) + 
+            math.cos(latitude1) * math.cos(latitude2) * math.cos(longitude2 - longitude1)) * 6371
+        
+        if distance >= min_distance and distance <= max_distance:
+            return True
+        else:
+            return False
+
+    
 class PropertyFavourites(db.Model):
     pf_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))

@@ -13,7 +13,7 @@
         height: 90vh;
         float: left;
     }
-
+    
     #content-container {
         width: 100%;
         height: 100vh;
@@ -23,130 +23,82 @@
 
 {% endblock head_block %}
 
+{% block page_name %}
+Search for Properties
+{% endblock page_name %}
+
 {% block content %}
 
 <div class="container pt-5">
     {% from "includes/formhelper.html" import render_field %}
-
-
-    <div class="row text-center">
-        <h1>Map</h1>
-    </div>
-
     <div class="row">
         <div class="row-md-4">
-        {% if not result_list and not property_list%}
             <form action="{{ url_for('properties_views.map_page') }}" method="post">
-            <div class="querymapflex">
-                {{ form.csrf_token }}
-            <div class="form-group">
-                {{ render_field(form.target_location, class_="form-control") }}
-            </div>
-            <div class="querymapflex2"><input type="submit" class="btn btn-primary" value="Search" style="align-content: end">
-                </div>
-
-            </div>
-
+                <div class="querymapflex">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        {{ render_field(form.target_location, class_="form-control") }}
+                    </div>
+                    <div class="querymapflex2">
+                        {{form.submit_target_location_form(class_="btn btn-primary")}}
+                        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters" aria-controls="offcanvasScrolling"><i class="fa-solid fa-filter"></i></button>
+                    </div>
+                </div>   
             </form>
-        {% endif %}
-            <br>
-        {% if result_list %}
-        <form action="{{ url_for('properties_views.map_page') }}" method="post">
-            {{ dynamic_form.csrf_token }}
-            <div class="form-group">
-              {{ render_field(dynamic_form.address, class_="form-control form-select") }}
-            </div>
-            <div>
-              <input type="submit" class="btn btn-primary" value="Select Address">
-            </div>
-        </form>
-        {% endif %}
+                      
+            <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasFiltersLabel">Filter Properties</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <form action="{{ url_for('properties_views.map_page') }}" method="post">
+                        {{ filters_form.csrf_token }}
+                        {{ filters_form.target_location}}
 
-        {% if property_list %}
-        <form action="{{ url_for('properties_views.map_page') }}" method="post">
-            {{ filters_form.csrf_token }}
-
-            <div class="form-row">
-                {{ render_field(filters_form.address, class_="form-control form-select") }}
-            </div>
-            
-                <div class="form-group">
-                    {{ render_field(filters_form.distance_min, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.distance_max, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.monthly_rent_max, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.num_of_bedrooms_min, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.num_of_bedrooms_max, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.floor_size_min, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.floor_size_max, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.ppsm_min, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.ppsm_max, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.year_built_min, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.year_built_max, class_="form-control") }}
-                </div>
-    
-                <div class="form-group">
-                    {{ render_field(filters_form.floor_level_min, class_="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ render_field(filters_form.floor_level_max, class_="form-control") }}
-                </div>
-        
-                <div class="form-group">
-                    {{ render_field(filters_form.furnish_status, class_="form-control form-select") }}
-                </div>
-            
-                <div class="form-group">
-                    {{ render_field(filters_form.lease_term, class_="form-control form-select") }}
-                </div>
-    
-                <div class="form-group">
-                    {{ render_field(filters_form.negotiable, class_="form-control form-select") }}
-                </div>
-        
-                <div class="form-group">
-                    {{ render_field(filters_form.flat_type, class_="form-control form-select") }}
-                </div>
-
-                <div class="form-group">
-                    <label>Gender:</label>
-                        {% for label, value in filters_form.gender.choices %}
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="gender" value="{{ value }}"> {{ label }}
-                            </label>
-                        </div>
+                        {% for field in filters_form %}
+                            {% if field.type != 'SelectMultipleField' and 'min' in field.name %}
+                                <div class="form-group pb-3">
+                                    {{ field.label }}
+                                    <div class="row">
+                                        <div class="col-sm-5">
+                                            {{ field(class_="form-control")|safe }}
+                                        </div>
+                                        <div class="col-sm-2 text-center">-</div>
+                            {% elif field.type != 'SelectMultipleField' and 'max' in field.name %}
+                                        <div class="col-sm-5">
+                                            {{ field(class_="form-control")|safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif field.type == 'SelectMultipleField' %} 
+                                <div class="form-group pb-3">
+                                    {{ field.label(class_="form-label") }}
+                                    
+                                    {% for value, label in field.choices %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" {% if value in field.default %}
+                                            checked
+                                        {% endif %}>
+                                        <label class="form-check-label" for="flexCheck{{value}}" style="font-weight: normal!important;">
+                                            {{label}}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         {% endfor %}
+                        
+                        <div class="form-group">
+                            {{filters_form.submit_filters_form(class_="btn btn-primary")}}
+                        </div>
+                    </form>
                 </div>
-        
-            <div>
-              <input type="submit" class="btn btn-primary" value="Apply Filters">
             </div>
-        </form>
-        {% endif %}
-
         </div>
+        <br>
         <div id="propertyFound"></div>
-
+        <br>
         <div id="map-container"></div>
     </div>
 </div>
@@ -163,51 +115,51 @@
         const data = JSON.stringify(false);
         
         const xhr = new XMLHttpRequest();
-            
+        
         xhr.addEventListener("readystatechange", function () {
-                if (this.readyState === this.DONE) {
-                    //console.log(JSON.parse(this.responseText).results);
-                    var address_list = [];
-                    for (var i = 0; i < JSON.parse(this.responseText).results.length; i++) {
-                        address_list.push(JSON.parse(this.responseText).results[i].ADDRESS);
-                    }
-                    $("#target_location").autocomplete({
-                        source: address_list
-                    });
-
+            if (this.readyState === this.DONE) {
+                //console.log(JSON.parse(this.responseText).results);
+                var address_list = [];
+                for (var i = 0; i < JSON.parse(this.responseText).results.length; i++) {
+                    address_list.push(JSON.parse(this.responseText).results[i].ADDRESS);
                 }
-            });
-            
+                $("#target_location").autocomplete({
+                    source: address_list
+                });
+                
+            }
+        });
+        
         var url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal=" + $(this).val() + "&returnGeom=N&getAddrDetails=Y&pageNum=1";
         xhr.open("GET", url);
         xhr.send(data);
     });
     
     async function initMap() {
-        var target = {{ target|tojson }} 
-        var properties = {{ property_list|tojson }} 
+        var target = {{ target|tojson }}
+        var properties = {{ property_list|safe }}
         
         var gmap = new google.maps.Map(document.getElementById('map-container'), {
             center: { lat: 1.369635, lng: 103.803680}, // center of singapore, default values 
             zoom: 13
         });
-
+        
         // user has selected a target location
         if (target[0] != 1.369635){ // checks if latitude is not default
             document.getElementById("propertyFound")
             .appendChild(document.createTextNode("{{ property_list|length }} properties found")) 
-
+            
             // to check if properties have the same lat/long later on
             const sameCoord = []
-
+            
             // Add multiple markers to map
             var infoWindow = new google.maps.InfoWindow(), marker, i;
             
             // get target address name
-            //print("CHEKKKK",target_address)
+            
             var target_address = {{ target_address|tojson }}['ADDRESS']
             target_address_url = target_address.replaceAll(" ","-")
-
+            
             // Marker for selected location
             var marker = new google.maps.Marker({
                 position: { lat: target[0], lng: target[1] },
@@ -215,92 +167,87 @@
                 title: target_address
             }); 
             
-
-
             sameCoord.push([target[0],target[1]])
-
+            
             // Infowindow for selected location
             google.maps.event.addListener(marker, 'click', (function(marker) {
                 return function() {
                     infoWindow.setContent(
-                        '<div class="gm-style-iw-d" style="overflow: scroll; max-height: 973px;">'+
-                            '<div dir="ltr" style="" jstcache="0">'+
-                                '<div jstcache="34" class="poi-info-window gm-style">'+
-                                    '<div jstcache="2"> <div jstcache="3" class="title full-width" jsan="7.title,7.full-width">Selected Location</div>'+
-                                '</div>'+
-                            '</div>'+
-                        '</div>'
-                    );
-                    infoWindow.open(gmap, marker);
-                }
-            })(marker));
-            
-            // Markers for queried properties
-            for (i=0;i<properties.length;i++){
-                // actually it wasnt a rate limit issue but more of the same coordinate issue preventing locations with the same coordinates to be added
-                // still a good way to not immediately place 3000+ markers onto the map i guess?
-                // if (i%49==0){ // delay because google maps rate limits at 50 reqs per second
-                //     await delay(2000).then(() => console.log('prevent rate limits'));
-                // }
-
-                var currLat = parseFloat(properties[i]["latitude"])
-                var currLng = parseFloat(properties[i]["longitude"])
-
-                const found = sameCoord.some(r=>[currLat, currLng].indexOf(r) >=0)
-                //console.log(found+properties[i]["block"])
-
-                if (found){
-                    var newCoord = getNewCoord(currLat,currLng)
-                    currLat = newCoord[0]
-                    currLng = newCoord[1]
-                }
-
-                sameCoord.push(currLat,currLng)
-                //console.log(currLat,currLng)
-                var address = properties[i]["block"] +" "+ properties[i]["street_name"] +" "+ properties[i]["building"]
-                marker = new google.maps.Marker({
-                    position: {
-                        lat:currLat,
-                        lng:currLng
-                    },
-                    map: gmap,
-                    title: address
-                });
-                
-                // Add info window to markers  
-                google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                    return function() {
-                        infoWindow.setContent(
-                            '<div class="gm-style-iw-d" style="overflow: scroll; max-height: 973px;">'+
-                                '<div dir="ltr" style="" jstcache="0">'+
-                                    '<div jstcache="34" class="poi-info-window gm-style">'+
-                                        '<div jstcache="2"> <div jstcache="3" class="title full-width" jsan="7.title,7.full-width">'+properties[i]['property_id']+'</div>'+
-                                            '<div class="address">'+
-                                                '<div jstcache="4" jsinstance="0" class="address-line full-width" jsan="7.address-line,7.full-width">'+address+'</div>'+
-                                                '<div jstcache="4" jsinstance="*1" class="address-line full-width" jsan="7.address-line,7.full-width">Singapore '+properties[i]['postal']+'</div>'+ 
-                                            '</div>'+
-                                        '</div>'+
-                                        '<div jstcache="5" style="display:none"></div>'+
-                                        '<div class="view-link">'+
-                                            '<a target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+ 
-                                        '</div>'+
+                                '<div class="card" style="width: 18rem;">'+
+                                    '<div class="card-body">'+
+                                    '<h5 class="card-title">Target Location</h5>'+
+                                    '<p class="card-text">'+target_address+'</p>'+
+                                    '<p class="card-text">Singapore '+properties[i]['postal']+'</p>'+
+                                    '<p class="card-text">Rent: $'+properties[i]['monthly_rent']+'/month</p>'+
+                                    '<a class="btn btn-primary" target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+
                                     '</div>'+
-                                '</div>'+
-                            '</div>'
-                        );
-                        infoWindow.open(gmap, marker);
-                    }
-                })(marker, i));
-            }
+                                '</div>'
+                                );
+                                infoWindow.open(gmap, marker);
+                            }
+                        })(marker));
+                        
+                        // Markers for queried properties
+                        for (i=0;i<properties.length;i++){
+                            // actually it wasnt a rate limit issue but more of the same coordinate issue preventing locations with the same coordinates to be added
+                            // still a good way to not immediately place 3000+ markers onto the map i guess?
+                            // if (i%49==0){ // delay because google maps rate limits at 50 reqs per second
+                                //     await delay(2000).then(() => console.log('prevent rate limits'));
+                                // }
+                                
+                                var currLat = parseFloat(properties[i]["latitude"])
+                                var currLng = parseFloat(properties[i]["longitude"])
+                                
+                                const found = sameCoord.some(r=>[currLat, currLng].indexOf(r) >=0)
+                                //console.log(found+properties[i]["block"])
+                                
+                                if (found){
+                                    var newCoord = getNewCoord(currLat,currLng)
+                                    currLat = newCoord[0]
+                                    currLng = newCoord[1]
+                                }
+                                
+                                sameCoord.push(currLat,currLng)
+                                //console.log(currLat,currLng)
+                                var address = properties[i]["block"] +" "+ properties[i]["street_name"] +" "+ properties[i]["building"]
+                                marker = new google.maps.Marker({
+                                    position: {
+                                        lat:currLat,
+                                        lng:currLng
+                                    },
+                                    map: gmap,
+                                    title: address
+                                });
+                                
+                                // Add info window to markers  
+                                google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                                    return function() {
+                                        infoWindow.setContent(
+                                        '<div class="card" style="width: 18rem;">'+
+                                            '<img src="/storage/Placeholder.png" class="card-img-top" alt="...">'+
+                                            '<div class="card-body">'+
+                                              '<h5 class="card-title">'+properties[i]['property_name']+'</h5>'+
+                                              '<p class="card-text">'+address+'</p>'+
+                                              '<p class="card-text">Singapore '+properties[i]['postal']+'</p>'+
+                                              '<p class="card-text">Rent: $'+properties[i]['monthly_rent']+'/month</p>'+
+                                              '<a class="btn btn-primary" target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+
+                                            '</div>'+
+                                          '</div>'
+                                        );
+                                        infoWindow.open(gmap, marker);
+                                    }   
+                                 })(marker, i));
+                        }
         }
     }
+
     // initialize map
     initMap();
-
+    
     function delay(time) {
         return new Promise(resolve => setTimeout(resolve, time));
     }
-
+    
     function getNewCoord(lat,lng){
         //Earth’s radius
         var R = 6378137.0;
@@ -318,9 +265,9 @@
         //New coordinates
         var NewLat = lat + dLat * 180 / Math.PI;
         var NewLng = lng + dLon * 180 / Math.PI;
-
+        
         return [NewLat,NewLng]
     }
-
+    
 </script>
 {% endblock bottomScript %}
