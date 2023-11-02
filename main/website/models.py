@@ -318,16 +318,19 @@ class PropertyFavourites(db.Model):
 class PropertyImages(db.Model):
     pi_id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey("property.property_id"))
-    image_url = db.Column(db.String(250))
+    image_url = db.Column(db.String(50))
 
     @staticmethod
     def reject_property_images(prop_id):
-        current_image = PropertyImages.query.filter_by(property_id = prop_id).first()
-        current_image_url = current_image.image_url
+        current_image = PropertyImages.query.filter_by(property_id=prop_id).all()
+        image_list = []
+        for image in current_image:
+            image_list.append(image.image_url)
+
         statement = f"DELETE FROM property_images WHERE property_id = {prop_id}"
         db.session.execute(text(statement))
         db.session.commit()
-        return current_image_url
+        return image_list
 
 class AccountRecovery(db.Model):
     ar_id = db.Column(db.Integer, primary_key=True)

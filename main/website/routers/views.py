@@ -146,18 +146,13 @@ def register_property():
         # save the image(s) to the respective folder and add it into the property_image database
         # image_url in the property_image database will store all images separated by a comma
         app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
-        image_url = ""
         for i, image in enumerate(form.image.data):
             image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + f"_{i}.png")
             image.save(image_form_file_path)
-            image_url += reformatted_filename + f"_{i}.png" + ", "
-
-        # remove the final comma added
-        image_url = image_url[:len(image_url) - 2]
-        new_property_image = PropertyImages(property_id=property_id,
-                                            image_url=image_url)
-        db.session.add(new_property_image)
-        db.session.commit()
+            new_property_image = PropertyImages(property_id=property_id,
+                                                image_url=reformatted_filename+f"_{i}.png")
+            db.session.add(new_property_image)
+            db.session.commit()
 
     # tentative return page
     flash("Property registered, pending approval", "success")
@@ -291,19 +286,17 @@ def edit_property(prop_id):
                         # delete the image from folder
                         os.remove(old_image_file_path)
 
+                # delete the old images from database
+                PropertyImages.reject_property_images(prop_id)
+
                 # add the new images to the folder
-                image_url = ""
                 for i, image in enumerate(form.image.data):
                     image_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + f"_{i}.png")
                     image.save(image_form_file_path)
-                    image_url += reformatted_filename + f"_{i}.png" + ", "
-
-                # remove the final comma added
-                image_url = image_url[:len(image_url) - 2]
-
-                #update the image_url column in the database
-                current_images.image_url = image_url
-                db.session.commit()
+                    new_property_image = PropertyImages(property_id=prop_id,
+                                                        image_url=reformatted_filename + f"_{i}.png")
+                    db.session.add(new_property_image)
+                    db.session.commit()
 
             # flash success message
             flash("Property info updated", "success")

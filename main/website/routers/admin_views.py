@@ -8,19 +8,27 @@ from .custom_decorators import admin_required, landlord_required
 from .. import forms, db
 from ..models import Property, PropertyImages
 
-
 admin = Blueprint('admin', __name__)
+
 
 @admin.route("/")
 @login_required
 @admin_required
 def admin_panel():
-    unapproved_properties = db.paginate(Property.query.order_by(Property.created_at.desc()).filter_by(is_approved=0), per_page=5)
+    unapproved_properties = db.paginate(Property.query.order_by(Property.created_at.desc()).filter_by(is_approved=0),
+                                        per_page=5)
     if request.args.get('page'):
-        unapproved_properties = db.paginate(Property.query.order_by(Property.created_at.desc()).filter_by(is_approved=0), per_page=5, page=int(request.args.get('page')))
-    
+        unapproved_properties = db.paginate(
+            Property.query.order_by(Property.created_at.desc()).filter_by(is_approved=0), per_page=5,
+            page=int(request.args.get('page')))
+
     return render_template("admin_panel_page.html", user=current_user, unapproved_properties=unapproved_properties)
-    
+
+
+APPROVAL_FORM_FOLDER = 'website/storage/approval_documents'
+IMAGE_FOLDER = 'website/storage/property_images'
+
+
 @admin.route("/manage_approval_document", methods=["GET", "POST"])
 @login_required
 @admin_required
@@ -57,26 +65,27 @@ def manage_approval_document():
         else:
             # selection is "No"
             # delete the images from database
-            current_image_url = PropertyImages.reject_property_images(prop_id)
+            current_image_url_list = PropertyImages.reject_property_images(prop_id)
 
             # delete the proeprty from database
             Property.reject_property(prop_id)
+            current_app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
             # delete the images
-            image_name_list = current_image_url.split(",")
-            for image in image_name_list:
-                old_image_file_path = os.path.join(current_app['IMAGE_UPLOAD_FOLDER'], image.strip())
+            for image in current_image_url_list:
+                old_image_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image.strip())
                 if os.path.exists(old_image_file_path):
                     # delete the image from folder
                     os.remove(old_image_file_path)
 
+            current_app.config['UPLOAD_FOLDER'] = APPROVAL_FORM_FOLDER
             reformatted_filename = f"{prop_id}"
-            approval_form_file_path = os.path.join(current_app["APPROVAL_DOCUMENT_UPLOAD_FOLDER"], reformatted_filename + ".pdf")
+            approval_form_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'],
+                                                   reformatted_filename + ".pdf")
 
             # delete the old approval form
             if os.path.exists(approval_form_file_path):
                 os.remove(approval_form_file_path)
-
 
             flash("Property rejected, deleted from database", "error")
 

@@ -252,16 +252,15 @@ def map_page_info(property_id=None):
                     map_urls.append(map_url)
         
         landlord = User.query.filter_by(user_id=property.user_id).first()
-        property_images = PropertyImages.query.filter_by(property_id=property_id).first()
+        property_images = PropertyImages.query.filter_by(property_id=property_id).all()
         property_favourite = PropertyFavourites.query.filter_by(property_id=property_id).first()
 
-        if property_images is not None:
-            property_images = property_images.image_url.split(",")
-        else:
-            property_images = []
+        property_images_list = []
+        for image in property_images:
+            property_images_list.append(image.image_url)
 
         return render_template("property_page.html", user=current_user, property=property, property_data=property_data,
-                               property_images=property_images, property_favourite=property_favourite, 
+                               property_images=property_images_list, property_favourite=property_favourite,
                                landlord=landlord, form=form,route_data=route_data, target_location=re.sub("SINGAPORE\s\d+$","",target_location),map_urls=map_urls)
     
 @properties_views.route("/map/<int:property_id>/favourite", methods=['POST'])
