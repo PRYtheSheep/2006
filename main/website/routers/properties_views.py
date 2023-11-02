@@ -138,6 +138,14 @@ def map_page():
 @login_required
 def map_page_info(property_id=None):
     property = Property.query.filter_by(property_id=property_id).first()
+
+
+    property_data = [
+    {"date": "2023-01-01", "price": 100000},
+    {"date": "2023-02-01", "price": 150000},
+    {"date": "2023-03-01", "price": 120000},
+    ] #temp testing data
+    
     if property is None or property.is_visible == 0 or property.is_approved == 0:
         flash("Property not found", category="error")
         return redirect(url_for("properties_views.map_page"))
@@ -244,7 +252,7 @@ def map_page_info(property_id=None):
         property_images = PropertyImages.query.filter_by(property_id=property_id).all()
         property_favourite = PropertyFavourites.query.filter_by(property_id=property_id).first()
 
-        return render_template("property_page.html", user=current_user, property=property, 
+        return render_template("property_page.html", user=current_user, property=property, property_data=property_data,
                                property_images=property_images, property_favourite=property_favourite, 
                                landlord=landlord, form=form,route_data=route_data, target_location=re.sub("SINGAPORE\s\d+$","",target_location),map_urls=map_urls)
     
