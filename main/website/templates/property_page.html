@@ -4,7 +4,7 @@
 
 {% block head_block %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_price_trend.css') }}">
 </head>
 <body>
 
@@ -167,7 +167,8 @@
         
 
         <div class="container">
-            <h1>Property Price Chart</h1>
+            <h3>Price Trend for {{property.town}} {{property.flat_type}}</h3>
+            <h4>(Price Per Square Meter)</h4>
             <canvas id="priceChart"></canvas>
         </div>
         <script src="{{ url_for('static', filename='script.js') }}"></script>
@@ -261,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 {
                     label: "Property Prices",
                     data: prices,
-                    borderColor: "blue",
+                    borderColor: "#df6951",
                     fill: false,
                 },
             ],

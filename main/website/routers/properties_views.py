@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 import re
 import base64
+import random
 
 properties_views = Blueprint('properties_views', __name__)
 
@@ -139,13 +140,16 @@ def map_page():
 def map_page_info(property_id=None):
     property = Property.query.filter_by(property_id=property_id).first()
 
+    #fake price trend data
+    cur_ppsm = float(property.price_per_square_metre)
+    random_number_1 = random.uniform(-5.0, 3.0)
+    random_number_2 = random.uniform(-8.0, 0.0)
+    random_number_3 = random.uniform(-10.0, -3.0)
+    property_data = [{"date": "2023-01-01", "price": cur_ppsm + random_number_3},
+                     {"date": "2023-04-01", "price": cur_ppsm + random_number_2},
+                     {"date": "2023-07-01", "price": cur_ppsm + random_number_1},
+                     {"date": "2023-10-01", "price": cur_ppsm},] 
 
-    property_data = [
-    {"date": "2023-01-01", "price": 100000},
-    {"date": "2023-02-01", "price": 150000},
-    {"date": "2023-03-01", "price": 120000},
-    ] #temp testing data
-    
     if property is None or property.is_visible == 0 or property.is_approved == 0:
         flash("Property not found", category="error")
         return redirect(url_for("properties_views.map_page"))
