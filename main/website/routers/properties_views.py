@@ -252,8 +252,13 @@ def map_page_info(property_id=None):
                     map_urls.append(map_url)
         
         landlord = User.query.filter_by(user_id=property.user_id).first()
-        property_images = PropertyImages.query.filter_by(property_id=property_id).all()
+        property_images = PropertyImages.query.filter_by(property_id=property_id).first()
         property_favourite = PropertyFavourites.query.filter_by(property_id=property_id).first()
+
+        if property_images is not None:
+            property_images = property_images.image_url.split(",")
+        else:
+            property_images = []
 
         return render_template("property_page.html", user=current_user, property=property, property_data=property_data,
                                property_images=property_images, property_favourite=property_favourite, 
@@ -297,5 +302,6 @@ def favourited_properties():
 @properties_views.route("/storage/<path:filename>")
 def property_image_url(filename):
     path = (os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'website', 'storage', 'property_images'))
-    return send_from_directory(path, filename)
+    return send_from_directory(directory=path,
+                               path=filename)
 
