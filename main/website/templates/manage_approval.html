@@ -19,7 +19,7 @@ Manage Approval Document
   {% endif %}
   <div class="row">
       <div class="col-lg-6 offset-lg-3">
-          <form action="{{ url_for('views.manage_approval_document') }}" method="post" enctype="multipart/form-data">
+          <form action="{{ url_for('admin.manage_approval_document') }}" method="post" enctype="multipart/form-data">
             {{ form.csrf_token }}
             <div class="form-group">
               {{ render_field(form.property_id, class_="form-control") }}

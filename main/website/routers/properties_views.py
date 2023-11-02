@@ -11,7 +11,6 @@ import random
 
 properties_views = Blueprint('properties_views', __name__)
 
-
 @properties_views.route("/map", methods=['GET', 'POST'])
 @login_required
 def map_page():
@@ -135,7 +134,7 @@ def map_page():
                            target=target,target_address = target_address)
 
 
-@properties_views.route("/map/<int:property_id>", methods=['GET', 'POST'])
+@properties_views.route("/map/property/<int:property_id>", methods=['GET', 'POST'])
 @login_required
 def map_page_info(property_id=None):
     property = Property.query.filter_by(property_id=property_id).first()
@@ -150,7 +149,7 @@ def map_page_info(property_id=None):
                      {"date": "2023-07-01", "price": cur_ppsm + random_number_1},
                      {"date": "2023-10-01", "price": cur_ppsm},] 
 
-    if property is None or property.is_visible == 0 or property.is_approved == 0:
+    if property is None or property.is_approved == 0:
         flash("Property not found", category="error")
         return redirect(url_for("properties_views.map_page"))
     else:
@@ -264,7 +263,7 @@ def map_page_info(property_id=None):
 @login_required
 def favourite_property(property_id=None):
     property = Property.query.filter_by(property_id=property_id).first()
-    if property is None or property.is_visible == 0 or property.is_approved == 0:
+    if property is None or property.is_approved == 0:
         return {"error": "Property not found"}
     else:
         if PropertyFavourites.query.filter_by(user_id=current_user.user_id).count() >= 10:
@@ -284,12 +283,13 @@ def favourite_property(property_id=None):
 @properties_views.route("/account/favourites", methods=['GET'])
 @login_required
 def favourited_properties():
+    # paginate if got time
     property_favourites = PropertyFavourites.query.filter_by(user_id=current_user.user_id).all()
     property_list = []
     property_images = []
     for property_favourite in property_favourites:
         property = Property.query.filter_by(property_id=property_favourite.property_id).first()
-        if property is not None and property.is_visible == 1 and property.is_approved == 1:
+        if property is not None and property.is_approved == 1:
             property_list.append(property)
             property_images.append(PropertyImages.query.filter_by(property_id=property.property_id).first())
     return render_template("favourite_properties_page.html", user=current_user, property_list=property_list, property_images=property_images)

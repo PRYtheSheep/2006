@@ -1,5 +1,5 @@
 def test_get_property_page_not_logged_in(client):
-    response = client.get('/map/1', follow_redirects=True)
+    response = client.get('/map/property/1', follow_redirects=True)
 
     assert response.status_code == 200
     assert b"Please login to access this page." in response.data

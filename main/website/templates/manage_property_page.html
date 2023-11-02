@@ -1,0 +1,82 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Notifications{% endblock title %}
+
+{% block page_name %}
+Manage Properties
+{% endblock page_name %}
+
+{% block content %}
+{% from "includes/pagination.html" import render_pagination %}
+<div class="container pt-5">
+    <div class="row pb-2">
+        <div class="col-sm-12 text-center">
+            <a href="{{ url_for('views.manage_property_approved') }}" class="btn btn-primary {% if approved %}active{% endif %}">Approved Properties</a>
+            <a href="{{ url_for('views.manage_property_unapproved') }}" class="btn btn-primary {% if not approved %}active{% endif %}">Unapproved Properties</a>
+        </div>
+    </div>
+    <hr>
+    {% if property_list.items %}
+    {% for property in property_list  %}
+    <div class="row pb-2">
+        <div class="col-sm-4">
+            <img src="{{ url_for('properties_views.property_image_url', filename=property.property_images[0].image_url) }}" class="img-fluid" alt="Responsive image">
+        </div>
+        <div class="col-sm-8">
+            <div class="row">
+                <div class="col-12">
+                    <h2>
+                        {% if approved %}
+                            <a href="{{ url_for('properties_views.map_page_info',property_id=property.property_id) }}">{{ property.property_name }}</a>
+                        {% else %}
+                            {{ property.property_name }}
+                        {% endif %}
+                    </h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h3>${{ property.monthly_rent }}/month</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p>{{ property.description }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p>{{ property.block }} {{ property.street_name }} {{ property.building }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p>Singapore {{ property.postal }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <a href="{{ url_for('views.edit_property', prop_id=property.property_id) }}" class="btn btn-primary">Edit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    {% endfor %}
+    <div class="col-12">
+        {% if approved %}
+        {{ render_pagination(property_list, 'views.manage_property_approved') }}    
+        {% else %}
+        {{ render_pagination(property_list, 'views.manage_property_unapproved') }}
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No properties</h4>
+            <p>You have no properties. Start uploading one <a href='{{ url_for("views.register_property") }}'>here</a>.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

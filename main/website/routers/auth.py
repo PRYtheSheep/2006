@@ -28,7 +28,7 @@ def login_account():
         else:
             flash('Incorrect email or password', category='error')
         
-    return render_template("loginpage.html", user=current_user, form=form)
+    return render_template("login_page.html", user=current_user, form=form)
 
 @auth.route("/logout")
 @login_required
@@ -59,7 +59,7 @@ def register_account():
             
             flash("Registered Successfully", category='success')
             return redirect(url_for('auth.login_account'))
-    return render_template("register.html", user=current_user, form=form)
+    return render_template("register_account_page.html", user=current_user, form=form)
 
 @auth.route('/forgetpassword', methods=['GET', 'POST'])
 def forget_password_request():
@@ -97,7 +97,7 @@ def forget_password_request():
         else:
             flash("There are no accounts with this email", 'error')
             return redirect(url_for("auth.forget_password_request"))
-    return render_template("forget_password.html", user=current_user, form=form)
+    return render_template("forget_password_request_page.html", user=current_user, form=form)
 
 
 @auth.route('/forgetpassword/<uuid:reset_id>', methods=["GET", "POST"])
@@ -123,5 +123,8 @@ def forget_password(reset_id):
             db.session.commit()
             flash("Password changed successfully")
             return redirect(url_for("auth.login_account"))
-    return render_template("forget_password_change.html", user=current_user, form=form, reset_id=reset_id)
+    return render_template("forget_password_change_page.html", user=current_user, form=form, reset_id=reset_id)
 
+@auth.route('/page404')
+def page404():
+    return render_template("404.html", user=current_user)

@@ -65,7 +65,7 @@
 									{% if user.account_type == "admin" %}
 									<li><hr class="dropdown-divider"></li>
 									<li>
-										<a class="dropdown-item" href="{{ url_for('views.manage_approval_document') }}">Manage Approval Document</a>
+										<a class="dropdown-item" href="{{ url_for('admin.admin_panel') }}">Admin Panel</a>
 									</li>
 									{% endif %}
 								</ul>
@@ -90,8 +90,7 @@
 								<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 									<li><a class="dropdown-item" href="{{ url_for('views.register_property') }}">Register Property</a></li> 
 									<li><hr class="dropdown-divider"></li>
-									<li><a class="dropdown-item" href="{{ url_for('views.select_property_to_edit') }}">Edit Property</a></li>
-									
+									<li><a class="dropdown-item" href="{{ url_for('views.manage_property_approved') }}">Manage Property</a></li>
 								</ul>
 							</li>
 							{% endif %}	

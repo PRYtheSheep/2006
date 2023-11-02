@@ -45,14 +45,14 @@ class Property(db.Model):
     furnishing = db.Column(db.String(19))
     lease_term = db.Column(db.String(10))
     negotiable_pricing = db.Column(db.String(3))
-    is_visible = db.Column(db.Boolean)
     is_approved = db.Column(db.Boolean)
-    property_name = db.Column(db.String(150))  # new
-    property_description = db.Column(db.String(150))  # new
-    created_at = db.Column(db.DateTime) # new
-    property_images = db.relationship('PropertyImages')
+    property_name = db.Column(db.String(150))
+    property_description = db.Column(db.String(150))
+    created_at = db.Column(db.DateTime)
     gender = db.Column(db.String(6))
-
+    property_images = db.relationship('PropertyImages')
+    user = db.relationship('User', uselist=False)
+    
     @staticmethod
     def query_(
             inputlatitude,
@@ -152,8 +152,7 @@ class Property(db.Model):
             is_negotiable = ['no', 'yes'],
             flat_type = ['5-ROOM', '4-ROOM', '3-ROOM', '2-ROOM', 'EXECUTIVE'],
             gender = ['male','female','mixed'],
-            is_approved = True,
-            is_visible = True
+            is_approved = True
             ):
 
         """ returns a list of properties that satisfy the given criteria
@@ -182,7 +181,6 @@ class Property(db.Model):
         is_negotiable -- list of negotiable pricing
         flat_type -- list of flat type
         is_approved -- is the property approved
-        is_visible -- is the property visible
 
         Return: list of properties
         """
@@ -207,8 +205,7 @@ class Property(db.Model):
                     Property.negotiable_pricing.in_(is_negotiable),
                     Property.flat_type.in_(flat_type),
                     Property.gender.in_(gender),
-                    Property.is_approved == is_approved,
-                    Property.is_visible == is_visible)
+                    Property.is_approved == is_approved)
         
         results = db.session.execute(stmt).mappings().all()
     

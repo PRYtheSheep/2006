@@ -26,17 +26,8 @@ def set_app(app1):
 @views.route("/")
 def landing_page():
     latest_properties = Property.query.filter_by(is_approved=1).order_by(Property.created_at.desc()).limit(3).all()
-    latest_property_images = []
-    for property in latest_properties:
-        latest_property_images.append(PropertyImages.query.filter_by(property_id=property.property_id).first())
-    return render_template("homepage.html", user=current_user, latest_properties=latest_properties, latest_property_images=latest_property_images)
 
-
-# @views.route("/admin")
-# @login_required
-# @admin_required
-# def admin_panel():
-#     return render_template("homepage.html", user=current_user)  # temp
+    return render_template("landing_page.html", user=current_user, latest_properties=latest_properties)
 
 
 APPROVAL_FORM_ALLOWED_EXTENSIONS = {"pdf"}
@@ -51,10 +42,32 @@ def allowed_file(filename, allowed_extensions):
 APPROVAL_FORM_FOLDER = 'website/storage/approval_documents'
 IMAGE_FOLDER = 'website/storage/property_images'
 
-
+@views.route("/manage_property/approved")
 @login_required
 @landlord_required
-@views.route("/registerproperty", methods=["GET", "POST"])
+def manage_property_approved():
+    # get all properties owned by user
+    property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==True).order_by(Property.created_at.desc()), per_page=10)
+    if request.args.get('page'):
+        property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==True).order_by(Property.created_at.desc()), per_page=10, page=int(request.args.get('page')))
+
+    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=True)
+
+@views.route("/manage_property/unapproved")
+@login_required
+@landlord_required
+def manage_property_unapproved():
+    # get all properties owned by user
+    property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==False).order_by(Property.created_at.desc()), per_page=10)
+    if request.args.get('page'):
+        property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==False).order_by(Property.created_at.desc()), per_page=10, page=int(request.args.get('page')))
+
+    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=False)
+
+
+@views.route("/manage_property/registerproperty", methods=["GET", "POST"])
+@login_required
+@landlord_required
 def register_property():
     form = forms.RegisterPropertyForm()
 
@@ -113,7 +126,6 @@ def register_property():
                                        lease_term=form.lease_term.data,
                                        negotiable_pricing=form.negotiable.data,
                                        is_approved=False,
-                                       is_visible=True,
                                        property_name=form.property_name.data,
                                        property_description=form.property_description.data,
                                        created_at=form.rent_approval_date.data,
@@ -152,73 +164,9 @@ def register_property():
     return render_template("register_property.html", user=current_user, form=form)
 
 
-# requires @admin annotation but will add it later after hard coding in the admin account
-@login_required
-@admin_required
-@views.route("/manage_approval_document", methods=["GET", "POST"])
-def manage_approval_document():
-    form = forms.ManageApprovalForm()
-
-    unapproved_properties = Property.query.filter_by(is_approved=0).all()
-    list_l = []
-    for i in unapproved_properties:
-        list_l.append(i.property_id)
-    flash(f"Unapproved properties: {list_l}")
-
-    if form.validate_on_submit():
-        prop_id = form.property_id.data
-        selection = form.selection.data
-
-        if prop_id not in list_l:
-            flash("Invalid property ID", "error")
-            return render_template("manage_approval.html", user=current_user, form=form)
-
-        if selection == "View documents":
-            filename = f"{prop_id}.pdf"
-            path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'storage',
-                                'approval_documents')
-            return send_from_directory(
-                directory=path,
-                path=filename,
-                as_attachment=False)
-
-        elif selection == "Yes":
-            Property.approve_property(prop_id)
-            flash("Property approved")
-
-        else:
-            # selection is "No"
-            # delete the images from database
-            current_image_url = PropertyImages.reject_property_images(prop_id)
-
-            # delete the proeprty from database
-            Property.reject_property(prop_id)
-
-            # delete the images
-            image_name_list = current_image_url.split(",")
-            app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
-            for image in image_name_list:
-                old_image_file_path = os.path.join(app.config["UPLOAD_FOLDER"], image.strip())
-                if os.path.exists(old_image_file_path):
-                    # delete the image from folder
-                    os.remove(old_image_file_path)
-
-            app.config["UPLOAD_FOLDER"] = APPROVAL_FORM_FOLDER
-            reformatted_filename = f"{prop_id}"
-            approval_form_file_path = os.path.join(app.config["UPLOAD_FOLDER"], reformatted_filename + ".pdf")
-
-            # delete the old approval form
-            if os.path.exists(approval_form_file_path):
-                os.remove(approval_form_file_path)
-
-
-            flash("Property rejected, deleted from database", "error")
-
-    return render_template("manage_approval.html", user=current_user, form=form)
-
-
-@landlord_required
+# replaced with manage_property
 @views.route("/select_property_to_edit", methods=["GET", "POST"])
+@landlord_required
 def select_property_to_edit():
     form = forms.SelectPropertyToEdit()
 
@@ -240,8 +188,8 @@ def select_property_to_edit():
     return render_template("select_property_to_edit.html", user=current_user, form=form)
 
 
+@views.route("/manage_property/edit_property/<prop_id>", methods=["GET", "POST"])
 @landlord_required
-@views.route("/edit_property/<prop_id>", methods=["GET", "POST"])
 def edit_property(prop_id):
     form = forms.EditProperty()
     # get the property with prop_id and prefill in the form with previous information

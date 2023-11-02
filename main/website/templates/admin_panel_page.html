@@ -1,0 +1,57 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Admin Panel{% endblock title %}
+
+{% block page_name %}
+Admin Panel
+{% endblock page_name %}
+
+{% block content %}
+{% from "includes/pagination.html" import render_pagination %}
+<div class="container pt-5">
+    <div class="row">
+        <div class="col-sm-12 text-center">
+            <a href="{{ url_for('admin.admin_panel') }}" class="btn btn-primary active">Unapproved Properties</a>
+            <a href="#" class="btn btn-primary">Something else</a>
+        </div>
+    </div>
+    <hr>
+    <div class='col-sm-12 pt-2'>
+        {% if unapproved_properties.items %}
+        {% for property in unapproved_properties  %}
+        <div class="row pb-2">
+            <div class="col-sm-4">
+                <img src="{{ url_for('properties_views.property_image_url', filename=property.property_images[0].image_url) }}" class="img-fluid" alt="Responsive image">
+            </div>
+            <div class="col-sm-8">
+                <div class="row">
+                    <div class="col-12">
+                        <h5>{{ property.property_name }}</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p>Landlord: {{ property.user.first_name}} {{ property.user.last_name}}</p>
+                        <p>User ID: {{ property.user.user_id }}</p>
+                        <p>Property ID: {{property.property_id}}</p>
+                        <p>Created on: {{property.created_at}} </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <a href="{{ url_for('admin.manage_approval_document', prop_id=property.property_id) }}" class="btn btn-primary">Manage Property Listing</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        {% endfor %}
+        <div class="col-12">
+            {{ render_pagination(unapproved_properties, 'admin.admin_panel') }}
+        </div>
+        {% else %}
+
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

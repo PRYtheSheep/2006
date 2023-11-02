@@ -12,7 +12,7 @@ account_views = Blueprint('account_views', __name__)
 @login_required
 def account_settings(setting_type=None):
     if not setting_type:
-        return render_template("account_settings.html", user=current_user, setting_type=setting_type)
+        return render_template("account_settings_page.html", user=current_user, setting_type=setting_type)
     else:
         if setting_type == 'account':
             form = forms.AccountSettingsForm()
@@ -29,7 +29,7 @@ def account_settings(setting_type=None):
                 else:
                     flash("Password entered is wrong", 'error')
                     return redirect(url_for('account_views.account_settings', setting_type='account'))
-            return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
+            return render_template("account_settings_page.html", user=current_user, setting_type=setting_type, form=form)
         elif setting_type == 'password':
             form = forms.ChangePasswordForm()
             if form.validate_on_submit():
@@ -46,7 +46,7 @@ def account_settings(setting_type=None):
                 else:
                     flash("Current Password is wrong", 'error')
                     return redirect(url_for('account_views.account_settings', setting_type='password'))
-            return render_template("account_settings.html", user=current_user, setting_type=setting_type, form=form)
+            return render_template("account_settings_page.html", user=current_user, setting_type=setting_type, form=form)
         else:
             return render_template("404.html", user=current_user)
 
