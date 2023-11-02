@@ -249,7 +249,9 @@ class Property(db.Model):
                         furnishing=None,
                         rent_approval_date=None,
                         lease_term=None,
-                        negotiable=None):
+                        negotiable=None,
+                        property_name=None,
+                        property_description=None):
         prop = Property.query.filter_by(property_id=property_id).first()
 
         # update the property data if data is provided in the argument
@@ -274,6 +276,12 @@ class Property(db.Model):
 
         if negotiable is not None:
             prop.negotiable_pricing = negotiable
+
+        if property_name is not None:
+            prop.property_name = property_name
+
+        if property_description is not None:
+            prop.property_description = property_description
 
         # set is_approved to false and commit it into the database
         prop.is_approved = False

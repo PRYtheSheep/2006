@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from wtforms.widgets import TextArea
+
 from . import models
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
@@ -46,11 +49,12 @@ class ChangeForgetPasswordForm(FlaskForm):
 
 
 class RegisterPropertyForm(FlaskForm):
+    property_name = StringField('Property Name', widget=TextArea(), validators=[validators.data_required()])
     postal_code = IntegerField('Postal Code', [validators.NumberRange(min=0, max=999999)])
     town = StringField('Town', [validators.DataRequired()])
     # block = StringField('Block', [validators.DataRequired()]) # don't need block
     # building = StringField('Building', [validators.DataRequired()]) # don't need building
-    # street_name = StringField('Street Name', [validators.DataRequired()]) # don't need streetname
+    # street_name = StringField('Street Name', [validators.DataRequired()]) # don't need street name
     flat_type = SelectField('Flat Type', choices=[('2-Room', '2-Room'), ('3-Room', '3-Room'),
                                                   ('4-Room', '4-Room'), ('5-Room', '5-Room'),
                                                   ('Executive', 'Executive')])
@@ -58,7 +62,7 @@ class RegisterPropertyForm(FlaskForm):
     num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
     gender = SelectField('Gender', choices=[('mixed', 'mixed'), ('male', 'male'), ('female', 'female')])
     floor_size = IntegerField('Floor size in square metres', [validators.NumberRange(min=0, max=200)])
-    year_built = IntegerField('Year Built', [validators.NumberRange(min=1950, max=2023)])
+    year_built = DateField('Built Date', format="%Y-%m-%d", validators=[validators.DataRequired()])
     furnishing = SelectField('Furnishing', choices=[('Not Furnished', 'Not Furnished'),
                                                                 ('Partially Furnished', 'Partially Furnished'),
                                                                 ('Fully Furnished', 'Fully Furnished')])
@@ -68,6 +72,7 @@ class RegisterPropertyForm(FlaskForm):
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
+    property_description = StringField('Property Description', widget=TextArea(), validators=[validators.data_required()])
     image = MultipleFileField("Insert up to 5 photos of the property" ,[validators.DataRequired()])
     approval_form = FileField("Insert approval document", [validators.DataRequired()])
 
@@ -151,16 +156,18 @@ class SelectPropertyToEdit(FlaskForm):
 
 
 class EditProperty(FlaskForm):
+    property_name = StringField('Property Name', widget=TextArea())
     monthly_rent = IntegerField('Monthly Rent', [validators.NumberRange(min=0, max=10000)])
     num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
     gender = SelectField('Gender', choices=[('mixed', 'mixed'), ('male', 'male'), ('female', 'female')])
-    furnishing = SelectField('Furnishing', choices=[('Not Furnished', 'Not Furnished'),
-                                                    ('Partially Furnished', 'Partially Furnished'),
-                                                    ('Fully Furnished', 'Fully Furnished')])
+    furnishing = SelectField('Furnishing', choices=[('not furnished', 'not furnished'),
+                                                    ('partially furnished', 'partially furnished'),
+                                                    ('fully furnished', 'fully furnished')])
     rent_approval_date = DateField('List Date', format="%Y-%m-%d")
     lease_term = SelectField('Lease Term', choices=[('1 year', '1 year'), ('2 years', '2 years'),
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
-    negotiable = SelectField('Negotiable Pricing', choices=[('No', 'No'), ('Yes', 'Yes')])
+    negotiable = SelectField('Negotiable Pricing', choices=[('no', 'no'), ('yes', 'yes')])
+    property_description = StringField('Property Description', widget=TextArea())
     image = MultipleFileField("Insert up to 5 photos of the property")
     approval_form = FileField("Insert approval document", [validators.DataRequired()])

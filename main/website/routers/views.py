@@ -114,8 +114,8 @@ def register_property():
                                        negotiable_pricing=form.negotiable.data,
                                        is_approved=False,
                                        is_visible=True,
-                                       property_name="no name for now",
-                                       property_description="no description for now",
+                                       property_name=form.property_name.data,
+                                       property_description=form.property_description.data,
                                        created_at=form.rent_approval_date.data,
                                        gender=form.gender.data)
         db.session.add(new_property)
@@ -148,7 +148,7 @@ def register_property():
         db.session.commit()
 
     # tentative return page
-    flash("Placeholder success message", "success")
+    flash("Property registered, pending approval", "success")
     return render_template("register_property.html", user=current_user, form=form)
 
 
@@ -249,6 +249,7 @@ def edit_property(prop_id):
 
     if request.method == "GET":
         # prefill the form
+        form.property_name.data = current_property.property_name
         form.monthly_rent.data = current_property.monthly_rent
         form.num_bedrooms.data = current_property.number_of_bedrooms
         form.gender.data = current_property.gender
@@ -256,6 +257,7 @@ def edit_property(prop_id):
         form.rent_approval_date.data = current_property.rent_approval_date
         form.lease_term.data = current_property.lease_term
         form.negotiable.data = current_property.negotiable_pricing
+        form.property_description.data = current_property.property_description
     else:
         if form.validate_on_submit():
 
@@ -266,6 +268,8 @@ def edit_property(prop_id):
             new_rent_approval_data = None
             new_lease_term = None
             new_negotiable = None
+            new_name = None
+            new_description = None
 
             # update the data in the property, property image database
             # check if the input data is different from current data
@@ -283,6 +287,10 @@ def edit_property(prop_id):
                 new_lease_term = form.lease_term.data
             if form.negotiable != current_property.negotiable_pricing:
                 new_negotiable = form.negotiable.data
+            if form.property_name != current_property.property_name:
+                new_name = form.property_name.data
+            if form.property_description != current_property.property_description:
+                new_description = form.property_description.data
 
             Property.update_property(property_id=prop_id,
                                      monthly_rent=new_monthly_rent,
@@ -291,7 +299,9 @@ def edit_property(prop_id):
                                      furnishing=new_furnishing,
                                      rent_approval_date=new_rent_approval_data,
                                      lease_term=new_lease_term,
-                                     negotiable=new_negotiable)
+                                     negotiable=new_negotiable,
+                                     property_name=new_name,
+                                     property_description=new_description)
 
             # check the images and approval document
             approval_form_filename = secure_filename(form.approval_form.name)  # get the file name from the form
