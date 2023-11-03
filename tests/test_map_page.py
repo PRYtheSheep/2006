@@ -10,7 +10,7 @@ def test_get_routes_property_1_success(client):
         "password": "123456789aA$"
     }, follow_redirects=True)
 
-    response = client.post('/map/1', data={
+    response = client.post('/map/property/1', data={
         "target_location": "80 PUNGGOL FIELD PUNGGOL 21 COMMUNITY CLUB SINGAPORE 828815",
     }, follow_redirects=True)
 
@@ -23,7 +23,7 @@ def test_get_routes_property_1_error(client):
         "password": "123456789aA$"
     }, follow_redirects=True)
 
-    response = client.post('/map/1', data={
+    response = client.post('/map/property/1', data={
         "target_location": "dfghdfhfghfg",
     }, follow_redirects=True)
 

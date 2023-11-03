@@ -15,7 +15,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150))
     username = db.Column(db.String(150))
     account_type = db.Column(db.String(150))
-    properties_owned = db.relationship('Property')
+    properties_owned = db.relationship('Property', backref='user', lazy=True)
     properties_favourited = db.relationship('PropertyFavourites')
     notifications = db.relationship('Notifications')
     
@@ -50,8 +50,8 @@ class Property(db.Model):
     property_description = db.Column(db.String(150))
     created_at = db.Column(db.DateTime)
     gender = db.Column(db.String(6))
+    approval_document_url = db.Column(db.String(150))
     property_images = db.relationship('PropertyImages')
-    user = db.relationship('User', uselist=False)
     
     @staticmethod
     def query_(
@@ -234,9 +234,11 @@ class Property(db.Model):
 
     @staticmethod
     def reject_property(prop_id):
+        approval_document = Property.query.filter_by(property_id=prop_id).first().approval_document_url
         statement = f"DELETE FROM property WHERE property_id = {prop_id}"
         db.session.execute(text(statement))
         db.session.commit()
+        return approval_document
 
     @staticmethod
     def update_property(property_id,
@@ -345,3 +347,13 @@ class Notifications(db.Model):
     message = db.Column(db.String(150))
     created_at = db.Column(db.DateTime, default=datetime.now())
     is_read = db.Column(db.Boolean, default=False)
+
+    @staticmethod
+    def new_notification(user_id, title, message):
+        new_notif = Notifications(
+            user_id=user_id,
+            title=title,
+            message=message,
+        )
+        db.session.add(new_notif)
+        db.session.commit()

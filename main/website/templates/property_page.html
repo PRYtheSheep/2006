@@ -25,11 +25,11 @@
                     {% for i in range(property_images|length) %}
                     {% if i==0 %}
                     <div class="carousel-item active">
-                        <img src="{{ url_for('properties_views.property_image_url', filename=property_images[0].strip() ) }}" class="w-100 img-fluid" alt="...">
+                        <img src="{{ url_for('properties_views.property_image_url', filename=property_images[0] ) }}" class="w-100 img-fluid" alt="...">
                     </div>
                     {% else %}
                     <div class="carousel-item">
-                        <img src="{{ url_for('properties_views.property_image_url', filename=property_images[i].strip() ) }}" class="w-100 img-fluid" alt="...">
+                        <img src="{{ url_for('properties_views.property_image_url', filename=property_images[i] ) }}" class="w-100 img-fluid" alt="...">
                     </div>
                     {% endif %}
                     {% endfor %}

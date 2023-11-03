@@ -48,7 +48,7 @@ Home
         <div class="col-1"></div>
     </div>
     <hr/>
-    <!--        services we offer-->
+    <!--services we offer-->
     <div class="row text-center pb-5 pt-5">
         <h5 style="color: #df6951;">CATEGORY</h5>
         <h1>Services we offer</h1>
@@ -103,8 +103,8 @@ Home
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">Rent: ${{ property.monthly_rent }}/month</li>
-                    <!-- <li class="list-group-item">A second item</li>
-                    <li class="list-group-item">A third item</li> -->
+                    <li class="list-group-item">Listed on {{ property.rent_approval_date.strftime("%d/%m/%Y") }}</li>
+                    <!-- <li class="list-group-item">A third item</li> -->
                 </ul>
                 <div class="card-footer">
                     <a class="btn btn-primary" href="{{ url_for('properties_views.map_page_info',property_id=property.property_id) }}">View More</a>

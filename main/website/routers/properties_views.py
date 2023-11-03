@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, send_from_directory, request, current_app
 from flask_login import login_required, current_user
+from .custom_decorators import admin_required
 import os
 from .. import forms, db
 from ..models import User, Property, PropertyFavourites, PropertyImages
@@ -301,6 +302,5 @@ def favourited_properties():
 @properties_views.route("/storage/<path:filename>")
 def property_image_url(filename):
     path = (os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'website', 'storage', 'property_images'))
-    return send_from_directory(directory=path,
-                               path=filename)
+    return send_from_directory(directory=path, path=filename)
 

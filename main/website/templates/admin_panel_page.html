@@ -39,7 +39,7 @@ Admin Panel
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <a href="{{ url_for('admin.manage_approval_document', prop_id=property.property_id) }}" class="btn btn-primary">Manage Property Listing</a>
+                        <a href="{{ url_for('admin.manage_approval', property_id=property.property_id) }}" class="btn btn-primary">Manage Property Listing</a>
                     </div>
                 </div>
             </div>
@@ -50,7 +50,11 @@ Admin Panel
             {{ render_pagination(unapproved_properties, 'admin.admin_panel') }}
         </div>
         {% else %}
-
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center">There are no unapproved properties</h2>
+                </div>
+            </div>
         {% endif %}
     </div>
 </div>

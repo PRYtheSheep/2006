@@ -10,6 +10,9 @@ from wtforms import HiddenField, IntegerRangeField, StringField, IntegerField, P
     DateField, FloatField, MultipleFileField,SelectMultipleField
 
 
+"""
+Forms for registration/login/password reset
+"""
 class RegistrationForm(FlaskForm):
     first_name = StringField('First Name', [validators.DataRequired()])
     last_name = StringField('Last Name', [validators.DataRequired()])
@@ -48,6 +51,29 @@ class ChangeForgetPasswordForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', [validators.DataRequired()])
 
 
+"""
+Forms for account settings
+"""
+class AccountSettingsForm(FlaskForm):
+    username = StringField('Username', [validators.DataRequired()])
+    password = PasswordField('Password', [validators.DataRequired()])
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', [validators.DataRequired()])
+    new_password = PasswordField('New Password', [
+    validators.Length(min=12, max=18),
+    validators.DataRequired(),
+    validators.EqualTo('confirm_new_password', message='Passwords must match.'),
+    validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
+                        ,
+                        message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
+    ])
+    confirm_new_password = PasswordField('Confirm New Password', [validators.DataRequired()])
+
+
+"""
+Forms for property management
+"""
 class RegisterPropertyForm(FlaskForm):
     property_name = StringField('Property Name', widget=TextArea(), validators=[validators.data_required()])
     postal_code = IntegerField('Postal Code', [validators.NumberRange(min=0, max=999999)])
@@ -67,7 +93,7 @@ class RegisterPropertyForm(FlaskForm):
                                                                 ('Partially Furnished', 'Partially Furnished'),
                                                                 ('Fully Furnished', 'Fully Furnished')])
     floor_level = IntegerField('Floor Level', [validators.NumberRange(min=1, max=99)])
-    rent_approval_date = DateField('List Date', format="%Y-%m-%d", validators=[validators.DataRequired()])
+    #rent_approval_date = DateField('List Date', format="%Y-%m-%d", validators=[validators.DataRequired()])
     lease_term = SelectField('Lease Term', choices=[('1 year', '1 year'), ('2 years', '2 years'),
                                                     ('3 years', '3 years'), ('Short Term', 'Short Term'),
                                                     ('Flexible', 'Flexible')])
@@ -77,30 +103,60 @@ class RegisterPropertyForm(FlaskForm):
     approval_form = FileField("Insert approval document", [validators.DataRequired()])
 
 
-class AccountSettingsForm(FlaskForm):
-    username = StringField('Username', [validators.DataRequired()])
-    password = PasswordField('Password', [validators.DataRequired()])
+class ManageApprovalForm(FlaskForm):
+    property_id = IntegerField("Property ID", [validators.DataRequired()])
+    selection = SelectField("Select an action to take", choices=[('Yes', "Yes"), ("No", "No"), ("View documents", "View documents")])
 
-class ChangePasswordForm(FlaskForm):
-    current_password = PasswordField('Current Password', [validators.DataRequired()])
-    new_password = PasswordField('New Password', [
-    validators.Length(min=12, max=18),
-    validators.DataRequired(),
-    validators.EqualTo('confirm_new_password', message='Passwords must match.'),
-    validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
-                        ,
-                        message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
-    ])
-    confirm_new_password = PasswordField('Confirm New Password', [validators.DataRequired()])
+class AdminPropertyViewForm(FlaskForm):
+    user_id = StringField("User ID", render_kw={'disabled': True})
+    full_name = StringField("Landlord Full Name", render_kw={'disabled': True})
+    email = StringField("Email", render_kw={'disabled': True})
+    property_id = StringField("Property ID", render_kw={'disabled': True})
+    property_name = StringField("Property Name", render_kw={'disabled': True})
+    property_description = StringField("Property Description", render_kw={'disabled': True})
+    block = StringField("Block", render_kw={'disabled': True})
+    street_name = StringField("Street Name", render_kw={'disabled': True})
+    building = StringField("Building", render_kw={'disabled': True})
+    postal_code = StringField("Postal Code", render_kw={'disabled': True})
+    town = StringField("Town", render_kw={'disabled': True})
+    flat_type = StringField("Flat Type", render_kw={'disabled': True})
+    monthly_rent = StringField("Monthly Rent", render_kw={'disabled': True})
+    num_bedrooms = StringField("Number of Bedrooms", render_kw={'disabled': True})
+    floor_size = StringField("Floor Size", render_kw={'disabled': True})
+    ppsm = StringField("Price Per Square Metre", render_kw={'disabled': True})
+    year_built = StringField("Year Built", render_kw={'disabled': True})
+    furnishing = StringField("Furnishing", render_kw={'disabled': True})
+    floor_level = StringField("Floor Level", render_kw={'disabled': True})
+    lease_term = StringField("Lease Term", render_kw={'disabled': True})
+    negotiable = StringField("Negotiable", render_kw={'disabled': True})
+    created_at = StringField("Created At", render_kw={'disabled': True})
+    approve_field = SubmitField("Approve Property")
+    reject_field = SubmitField("Reject Property")
+    reject_reason = StringField("Reason For Rejection (if applicable)", widget=TextArea())
+
+class EditProperty(FlaskForm):
+    property_name = StringField('Property Name', widget=TextArea())
+    monthly_rent = IntegerField('Monthly Rent', [validators.NumberRange(min=0, max=10000)])
+    num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
+    gender = SelectField('Gender', choices=[('mixed', 'mixed'), ('male', 'male'), ('female', 'female')])
+    furnishing = SelectField('Furnishing', choices=[('not furnished', 'not furnished'),
+                                                    ('partially furnished', 'partially furnished'),
+                                                    ('fully furnished', 'fully furnished')])
+    lease_term = SelectField('Lease Term', choices=[('1 year', '1 year'), ('2 years', '2 years'),
+                                                    ('3 years', '3 years'), ('Short Term', 'Short Term'),
+                                                    ('Flexible', 'Flexible')])
+    negotiable = SelectField('Negotiable Pricing', choices=[('no', 'no'), ('yes', 'yes')])
+    property_description = StringField('Property Description', widget=TextArea())
+    image = MultipleFileField("Insert up to 5 photos of the property")
+    approval_form = FileField("Insert approval document", [validators.DataRequired()])
+
+"""
+Forms for map view
+"""
 
 class TargetLocationForm(FlaskForm):
     target_location = StringField("Target Location", [validators.DataRequired()])
     submit_target_location_form = SubmitField("Search")
-
-
-class ManageApprovalForm(FlaskForm):
-    property_id = IntegerField("Property ID", [validators.DataRequired()])
-    selection = SelectField("Select an action to take", choices=[('Yes', "Yes"), ("No", "No"), ("View documents", "View documents")])
 
 class FiltersForm(FlaskForm):
     target_location = HiddenField("Target Location")
@@ -149,25 +205,3 @@ class FiltersForm(FlaskForm):
         ('mixed','Mixed')],
         default=['female','male','mixed'])
     submit_filters_form = SubmitField("Apply Filters")
-
-
-class SelectPropertyToEdit(FlaskForm):
-    prop_id = IntegerField("Property ID", [validators.DataRequired()])
-
-
-class EditProperty(FlaskForm):
-    property_name = StringField('Property Name', widget=TextArea())
-    monthly_rent = IntegerField('Monthly Rent', [validators.NumberRange(min=0, max=10000)])
-    num_bedrooms = IntegerField('Number of bedrooms', [validators.NumberRange(min=1, max=6)])
-    gender = SelectField('Gender', choices=[('mixed', 'mixed'), ('male', 'male'), ('female', 'female')])
-    furnishing = SelectField('Furnishing', choices=[('not furnished', 'not furnished'),
-                                                    ('partially furnished', 'partially furnished'),
-                                                    ('fully furnished', 'fully furnished')])
-    rent_approval_date = DateField('List Date', format="%Y-%m-%d")
-    lease_term = SelectField('Lease Term', choices=[('1 year', '1 year'), ('2 years', '2 years'),
-                                                    ('3 years', '3 years'), ('Short Term', 'Short Term'),
-                                                    ('Flexible', 'Flexible')])
-    negotiable = SelectField('Negotiable Pricing', choices=[('no', 'no'), ('yes', 'yes')])
-    property_description = StringField('Property Description', widget=TextArea())
-    image = MultipleFileField("Insert up to 5 photos of the property")
-    approval_form = FileField("Insert approval document", [validators.DataRequired()])
