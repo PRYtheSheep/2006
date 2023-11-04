@@ -1,10 +1,12 @@
-import json
+from flask import request
 from sqlalchemy import text, select
 
-from . import db
+from . import db, email_sender
 from flask_login import UserMixin
 from datetime import datetime
 import math
+import uuid
+from werkzeug.security import generate_password_hash
 
 
 class User(db.Model, UserMixin):
@@ -22,6 +24,18 @@ class User(db.Model, UserMixin):
     # override class used in flask_login
     def get_id(self):
         return (self.user_id)
+
+    @staticmethod
+    def register_account(user_obj: object):
+        """registers a new user into the database
+        
+        Keyword arguments:
+        user_obj -- the user object to be registered
+        Return: void
+        """
+        
+        db.session.add(user_obj)
+        db.session.commit()
 
 
 class Property(db.Model):
@@ -317,6 +331,7 @@ class PropertyFavourites(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     property_id = db.Column(db.Integer, db.ForeignKey("property.property_id"))
 
+
 class PropertyImages(db.Model):
     pi_id = db.Column(db.Integer, primary_key=True)
     property_id = db.Column(db.Integer, db.ForeignKey("property.property_id"))
@@ -334,11 +349,61 @@ class PropertyImages(db.Model):
         db.session.commit()
         return image_list
 
+
 class AccountRecovery(db.Model):
     ar_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     recovery_string = db.Column(db.String(150), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.now())
+
+    @staticmethod
+    def create_and_send_account_recovery(user_obj: User, request_url_root: str):
+        """creates a new account recovery object and sends an email to the user
+        
+        Keyword arguments:
+        user_obj -- user object to be sent the email
+        request_url_root -- url root of the request
+        Return: flash message to be displayed
+        """
+        account_recovery = AccountRecovery.query.filter_by(user_id=user_obj.user_id).first()
+
+        if account_recovery and ((datetime.now() - account_recovery.created_at).seconds / 60 < 5):  # user requested a reset in the last 5 minutes
+            return ("You have requested a password reset in the last 5 minutes. Please try again later.", 'error')
+        else:
+            u = str(uuid.uuid4())
+            # u = 218b7a1c-fa21-4e7b-9cfd-2d05e939ac28 # for testing purposes
+            email_content = f"Password reset link: {request_url_root}/forgetpassword/{u}"
+            email_sender.send_email(user_obj.email, "Password Reset Request", email_content)
+
+            if not account_recovery:  # first time resetting password
+                new_ar = AccountRecovery(user_id=user_obj.user_id,
+                                            recovery_string=u)
+                db.session.add(new_ar)
+            else:
+                account_recovery.recovery_string = u
+                account_recovery.created_at = datetime.now()
+
+            db.session.commit()
+
+            return ("A password reset link has been sent to your email", 'success')
+
+    @staticmethod
+    def check_valid_recovery_string(reset_id: str):
+        """checks if the recovery string is valid
+        
+        Keyword arguments:
+        recovery_string -- recovery string to be checked
+        Return: false: flash message to be displayed
+                true: account recovery object
+        """
+        account_recovery = AccountRecovery.query.filter_by(recovery_string=reset_id).first()
+
+        if not account_recovery:
+            return (False, "No such password request exist", 'error')
+        elif ((datetime.now() - account_recovery.created_at).seconds / 60 > 15):  # link expired, more than 15 mins
+            return (False, "Password reset link has expired", 'error')
+        else:
+            return (True, account_recovery)
 
 class Notifications(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
@@ -349,7 +414,7 @@ class Notifications(db.Model):
     is_read = db.Column(db.Boolean, default=False)
 
     @staticmethod
-    def new_notification(user_id, title, message):
+    def new_notification(user_id: str, title: str, message: str):
         new_notif = Notifications(
             user_id=user_id,
             title=title,

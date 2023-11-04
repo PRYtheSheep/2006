@@ -40,7 +40,7 @@ class ForgetPasswordForm(FlaskForm):
 
 
 class ChangeForgetPasswordForm(FlaskForm):
-    password = PasswordField('Password', [
+    password = PasswordField('New Password', [
         validators.Length(min=12, max=18),
         validators.DataRequired(),
         validators.EqualTo('confirm_password', message='Passwords must match.'),
@@ -48,7 +48,7 @@ class ChangeForgetPasswordForm(FlaskForm):
                           ,
                           message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
     ])
-    confirm_password = PasswordField('Confirm Password', [validators.DataRequired()])
+    confirm_password = PasswordField('Confirm New Password', [validators.DataRequired()])
 
 
 """

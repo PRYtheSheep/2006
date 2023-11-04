@@ -21,8 +21,7 @@ def map_page():
     filters_form = forms.FiltersForm()
     target = [1.369635, 103.803680]  # middle of sg coords
     if form.validate_on_submit() and form.submit_target_location_form.data:
-        print("form submitted")
-        print(filters_form.year_built_max.data)
+        #print("form submitted")
         target_location = form.target_location.data
         filters_form.target_location.data = target_location
         url = "https://www.onemap.gov.sg/api/common/elastic/search?searchVal={}&returnGeom=Y&getAddrDetails=Y&pageNum=1".format(
@@ -50,7 +49,7 @@ def map_page():
                                filters_form = filters_form, property_list=filtered,
                                target=[float(address_details['LATITUDE']), float(address_details['LONGITUDE'])],target_address = target_address)
     elif filters_form.validate_on_submit() and filters_form.submit_filters_form.data:
-        print("filters form submitted")
+        #print("filters form submitted")
         if form.target_location.data == None or form.target_location.data == "":
             flash("Please search for a target location first", category="error") 
             return redirect(url_for("properties_views.map_page"))
@@ -69,6 +68,7 @@ def map_page():
         year_built_max = filters_form.year_built_max.data
         floor_level_min = filters_form.floor_level_min.data
         floor_level_max = filters_form.floor_level_max.data
+        # if no filters are selected, use default values, so at least something is returned
         furnish_status = filters_form.furnish_status.data if filters_form.furnish_status.data else ['fully furnished', 'partially furnished', 'not furnished']
         lease_term = filters_form.lease_term.data if filters_form.lease_term.data else ['1 year','2 years','3 years','short term','flexible']
         negotiable = filters_form.negotiable.data if filters_form.negotiable.data else ['yes', 'no']
