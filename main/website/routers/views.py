@@ -35,7 +35,7 @@ def manage_property_approved():
     property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==True).order_by(Property.created_at.desc()), per_page=10)
     if request.args.get('page'):
         property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==True).order_by(Property.created_at.desc()), per_page=10, page=int(request.args.get('page')))
-
+    print(property_list)
     return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=True)
 
 @views.route("/manage_property/unapproved")
@@ -126,7 +126,7 @@ def register_property():
         # save the approval form to the respective folder
         approval_form_file_path = os.path.join(current_app.config["APPROVAL_DOCUMENT_UPLOAD_FOLDER"], reformatted_filename + ".pdf")
         approval.save(approval_form_file_path)
-        new_property.approval_form = reformatted_filename + ".pdf"
+        new_property.approval_document_url = reformatted_filename + ".pdf"
         db.session.commit()
 
         # save the image(s) to the respective folder and add it into the property_image database

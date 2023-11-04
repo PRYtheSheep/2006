@@ -48,11 +48,11 @@ def register_account():
             password = generate_password_hash(form.password.data) #123456789aA$ , 123456789aA$$
 
             new_user = User(email=email, 
-                                   password=password, 
-                                   username=email.split("@")[0], 
-                                   account_type=form.register_as.data,
-                                   first_name=form.first_name.data,
-                                   last_name=form.last_name.data)
+                            password=password, 
+                            username=email.split("@")[0], 
+                            account_type=form.register_as.data,
+                            first_name=form.first_name.data,
+                            last_name=form.last_name.data)
             
             User.register_account(new_user)
 
