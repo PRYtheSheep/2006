@@ -13,7 +13,7 @@ def create_app():
     # app configs
     APP_ROOT = os.path.dirname(os.path.abspath(__file__))
     app.config['SECRET_KEY'] = 'secret_key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://root:96173880@localhost/{DB_NAME}"
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://root:PRYtheSheep1!@localhost/{DB_NAME}"
     app.config['ONE_MAP_TOKEN'] = refresh_one_map_token()
     app.config["IMAGE_UPLOAD_FOLDER"] = APP_ROOT+'\\\\storage\\\\property_images'
     app.config["APPROVAL_DOCUMENT_UPLOAD_FOLDER"] = APP_ROOT+'\\\\storage\\\\approval_documents'

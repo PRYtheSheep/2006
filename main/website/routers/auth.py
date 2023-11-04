@@ -49,7 +49,9 @@ def register_account():
             username = email.split("@")[0]
             account_type = form.register_as.data
 
-            new_user = models.User(email=email, 
+            new_user = models.User(email=email,
+                                   first_name=form.first_name.data,
+                                   last_name=form.last_name.data,
                                    password=password, 
                                    username=username, 
                                    account_type=account_type)
