@@ -171,6 +171,7 @@ Search for Properties
             
             // Infowindow for selected location
             google.maps.event.addListener(marker, 'click', (function(marker) {
+
                 return function() {
                     infoWindow.setContent(
                                 '<div class="card" style="width: 18rem;">'+
@@ -188,6 +189,7 @@ Search for Properties
                         })(marker));
                         
                         // Markers for queried properties
+                        var bounds = new google.maps.LatLngBounds();
                         for (i=0;i<properties.length;i++){
                             // actually it wasnt a rate limit issue but more of the same coordinate issue preventing locations with the same coordinates to be added
                             // still a good way to not immediately place 3000+ markers onto the map i guess?
@@ -197,7 +199,8 @@ Search for Properties
                                 
                                 var currLat = parseFloat(properties[i]["latitude"])
                                 var currLng = parseFloat(properties[i]["longitude"])
-                                
+                                var markerPosition = new google.maps.LatLng(currLat, currLng);
+                                bounds.extend(markerPosition);
                                 const found = sameCoord.some(r=>[currLat, currLng].indexOf(r) >=0)
                                 //console.log(found+properties[i]["block"])
                                 
@@ -237,8 +240,14 @@ Search for Properties
                                         infoWindow.open(gmap, marker);
                                     }   
                                  })(marker, i));
+                                 gmap.fitBounds(bounds);
+                                 var maxZoom = 15;
+                                 if (gmap.getZoom() > maxZoom) {
+                                    gmap.setZoom(maxZoom);
+                                }
+
                         }
-        }
+        }   
     }
 
     // initialize map
