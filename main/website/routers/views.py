@@ -97,6 +97,10 @@ def register_property():
         url = f"https://www.onemap.gov.sg/api/common/elastic/search?searchVal={postal_code}&returnGeom=Y&getAddrDetails=Y&pageNum=1"
         response = requests.request("GET", url)
         response = response.json()
+        # sanity check, if the response["results"] has length 0, it means no address is returned
+        if len(response["results"]) == 0:
+            flash("Invalid postal code", "error")
+            return redirect(url_for('views.register_property'))
         result_dict = response["results"][0]
         property_latitude = result_dict['LATITUDE']
         property_longitude = result_dict['LONGITUDE']
