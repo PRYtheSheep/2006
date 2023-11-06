@@ -1,14 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from werkzeug.security import check_password_hash
-from .. import models, forms, db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, login_required, logout_user, current_user, login_remembered
-
-from .. import forms, email_sender, db, models
+from .. import forms, db
+from flask_login import login_user, login_required, logout_user, current_user
 from ..models import User, AccountRecovery
-from datetime import datetime
-import uuid
-from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth',__name__)
 

@@ -1,8 +1,10 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.mysql import insert as upsert
 import os
 from flask_login import LoginManager, current_user
 from .secret_key import refresh_one_map_token
+from werkzeug.security import generate_password_hash
 
 db = SQLAlchemy()
 DB_NAME = "mydb"
@@ -23,6 +25,10 @@ def create_app():
     from . import models
     with app.app_context():
         db.create_all()
+        # update and insert default users, see function below
+        upsert_users(1, "johndoe@landlord.com", "johndoe", "landlord", "John", "Doe") 
+        upsert_users(2, "admin@admin.com", "admin", "admin", "Admin", "User") 
+        upsert_users(3, "jackdoe@tenant.com", "jackdoe", "tenant", "Jack", "Doe")
 
     # init login manager
     login_manager = LoginManager()
@@ -37,8 +43,6 @@ def create_app():
     @app.errorhandler(404)
     def not_found(e):
         return render_template("404.html", user=current_user)
-
-
 
     return app
 
@@ -56,3 +60,29 @@ def register(app):
     app.register_blueprint(admin, url_prefix="/admin")
 
     return app
+
+def upsert_users(user_id, email, username, account_type, first_name, last_name):
+    from .models import User
+    upsert_stmt = upsert(User).values(
+        user_id=user_id,
+        email=email,
+        password=generate_password_hash("123456789aA$$"),
+        username=username,
+        account_type=account_type,
+        first_name=first_name,
+        last_name=last_name
+    )
+
+    on_duplicate_stmt = upsert_stmt.on_duplicate_key_update(
+        email=upsert_stmt.inserted.email,
+        password=upsert_stmt.inserted.password,
+        username=upsert_stmt.inserted.username,
+        account_type=upsert_stmt.inserted.account_type,
+        first_name=upsert_stmt.inserted.first_name,
+        last_name=upsert_stmt.inserted.last_name
+    )
+
+    db.session.execute(on_duplicate_stmt)
+    db.session.commit()
+
+    
