@@ -227,7 +227,9 @@ def map_page_info(property_id=None):
                         
                         # property location
                         if i == 0:
-                            iwt = "%3Cp%3E" + property.block + "%20" + property.street_name.replace(" ","%20") + "%20" + property.building.replace(" ","%20") + "%3C%2Fp%3E"
+                            iwt = "%3Cp%3E" + property.block + "%20" + property.street_name.replace(" ","%20") + "%20" 
+                            if property.building != 'NIL':
+                                iwt += "%20"+property.building.replace(" ","%20") + "%3C%2Fp%3E"
                             iwt = base64.urlsafe_b64encode(iwt.encode("ascii")).decode("ascii")
                             map_url += "&marker=postalcode:{}!icon:fa-hotel!iwt:{}!colour:red!rType:{}!rDest:{},{}".format(property.postal,iwt,leg['mode'],leg['to']['lat'], leg['to']['lon'])
                             #map_url += "&marker=postalcode:{}!icon:fa-hotel!colour:red!rType:{}!rDest:{},{}".format(property.postal,leg['mode'],leg['to']['lat'], leg['to']['lon'])

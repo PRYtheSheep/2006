@@ -87,7 +87,9 @@
                 <div class="card text-bg-light" style="max-width: 18rem;">
                     <div class="card-header">Address</div>
                     <div class="card-body">
-                        <p class="card-text">{{ property.block }} {{ property.street_name }} {{ property.building }}</p>
+                        <p class="card-text">{{ property.block }} {{ property.street_name }} {% if property.building != 'NIL' %}
+                            {{ property.building }}
+                        {% endif %}</p>
                         <p class="card-text">Singapore {{ property.postal }}</p>
                     </div>
                 </div>
@@ -120,7 +122,9 @@
                         <tr>
                             <th scope="row">{{j+1}}</th>
                             <td> {% if j==0 %} 
-                                    {{ property.block }} {{ property.street_name }} {{ property.building }} 
+                                    {{ property.block }} {{ property.street_name }} {% if property.building != 'NIL' %}
+                                    {{ property.building }}
+                                {% endif %} 
                                 {% else %} 
                                     {% if leg['from']['name'] == 'path' %}
                                     {{ itineraries['legs'][j-1]['from']['name'] }}

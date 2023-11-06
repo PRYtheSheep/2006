@@ -65,7 +65,7 @@ def manage_approval(property_id):
         property.rent_approval_date = datetime.now()
         db.session.commit()
 
-        flash(f"Property {property_id} rejected",'success')
+        flash(f"Property {property_id} approved",'success')
         return redirect(url_for("admin.admin_panel"))
 
     # reject property

@@ -212,6 +212,9 @@ Search for Properties
                 sameCoord.push(currLat,currLng)
                 //console.log(currLat,currLng)
                 var address = properties[i]["block"] +" "+ properties[i]["street_name"] +" "+ properties[i]["building"]
+                if (properties[i]["building"] == "NIL"){
+                    address = properties[i]["block"] +" "+ properties[i]["street_name"]
+                }
                 marker = new google.maps.Marker({
                     position: {
                         lat:currLat,

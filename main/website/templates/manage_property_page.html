@@ -46,7 +46,10 @@ Manage Properties
             </div>
             <div class="row">
                 <div class="col-12">
-                    <p>{{ property.block }} {{ property.street_name }} {{ property.building }}</p>
+                    <p>{{ property.block }} {{ property.street_name }} 
+                    <p class="card-text">{{property.block}} {{ property.street_name }} {% if property.building != 'NIL' %}
+                        {{ property.building }}
+                    {% endif %}</p>
                 </div>
             </div>
             <div class="row">

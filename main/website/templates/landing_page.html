@@ -99,7 +99,9 @@ Home
                 <img src="{{ url_for('properties_views.property_image_url', filename=property.property_images[0].image_url) }}" class="card-img-top" alt="...">
                 <div class="card-body">
                     <h5 class="card-title">{{property.property_name}}</h5>
-                    <p class="card-text">{{property.block}} {{ property.street_name }} {{ property.building }}</p>
+                    <p class="card-text">{{property.block}} {{ property.street_name }} {% if property.building != 'NIL' %}
+                        {{ property.building }}
+                    {% endif %}</p>
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">Rent: ${{ property.monthly_rent }}/month</li>
