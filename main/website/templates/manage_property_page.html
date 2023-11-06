@@ -12,7 +12,8 @@ Manage Properties
     <div class="row pb-2">
         <div class="col-sm-12 text-center">
             <a href="{{ url_for('views.manage_property_approved') }}" class="btn btn-primary {% if approved %}active{% endif %}">Approved Properties</a>
-            <a href="{{ url_for('views.manage_property_unapproved') }}" class="btn btn-primary {% if not approved %}active{% endif %}">Unapproved Properties</a>
+            <a href="{{ url_for('views.manage_property_unapproved') }}" class="btn btn-primary {% if not approved and not deletion%}active{% endif %}">Unapproved Properties</a>
+            <a href="{{ url_for('views.manage_property_pending_deletion') }}" class="btn btn-primary {% if deletion %}active{% endif %}">Properties Pending Deletion</a>
         </div>
     </div>
     <hr>
@@ -59,7 +60,14 @@ Manage Properties
             </div>
             <div class="row">
                 <div class="col-12">
-                    <a href="{{ url_for('views.edit_property', prop_id=property.property_id) }}" class="btn btn-primary">Edit</a>
+                    {% if not deletion %}
+                       <a href="{{ url_for('views.edit_property', prop_id=property.property_id) }}" class="btn btn-primary">Edit</a> 
+                       <a href="{{ url_for('views.delete_property', prop_id=property.property_id) }}" class="btn btn-danger">Delete</a> 
+                    {% else %}
+                        <form action="{{ url_for('views.cancel_deletion', prop_id=property.property_id) }}" method="post">
+                            <button type="submit" class="btn btn-danger">Cancel Deletion</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -69,17 +77,29 @@ Manage Properties
     <div class="col-12">
         {% if approved %}
         {{ render_pagination(property_list, 'views.manage_property_approved') }}    
+        {% elif deletion %}
+        {{ render_pagination(property_list, 'views.manage_property_pending_deletion') }}   
         {% else %}
         {{ render_pagination(property_list, 'views.manage_property_unapproved') }}
         {% endif %}
     </div>
     {% else %}
+    {% if not deletion %}
     <div class="col-12">
         <div class="alert alert-info" role="alert">
             <h4 class="alert-heading">No properties</h4>
             <p>You have no properties. Start uploading one <a href='{{ url_for("views.register_property") }}'>here</a>.</p>
         </div>
     </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No properties</h4>
+            <p>You have no properties pending deletion.</p>
+        </div>
+    </div>
+    {% endif %}
+
     {% endif %}
 </div>
 {% endblock content %}

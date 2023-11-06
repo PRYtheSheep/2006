@@ -54,7 +54,7 @@ Manage Landlord Properties
                     </div>
                 </div>
             </div>
-            <form action="{{ url_for('admin.manage_approval',property_id=property.property_id) }}" method="post">
+            <form action="{{ url_for('admin.manage_approval',property_id=property.property_id, manage_type=manage_type) }}" method="post">
                 {{ form.csrf_token }}
                 {% for field in form %}
                 {% if field.type == 'StringField' %}
@@ -64,8 +64,12 @@ Manage Landlord Properties
                 {% endif %}
                 {% endfor %}
                 <div class="form-group text-center pt-3">
+                    {% if manage_type == 'default' %}
                     {{ form.approve_field(class_="btn btn-success") }}
                     {{ form.reject_field(class_="btn btn-danger") }}
+                    {% elif manage_type == 'delete' %}
+                    {{ form.delete_field(class_="btn btn-danger") }}
+                    {% endif %}
                 </div>
             </form>
         </div>

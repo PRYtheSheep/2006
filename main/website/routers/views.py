@@ -6,9 +6,11 @@ from werkzeug.utils import secure_filename
 
 from .custom_decorators import landlord_required
 from .. import forms, db, models
-from ..models import Property, PropertyImages
+from ..models import Property, PropertyImages, Notifications, User
 from datetime import datetime
 import requests
+from werkzeug.security import check_password_hash
+
 
 views = Blueprint('views', __name__)
 
@@ -36,7 +38,7 @@ def manage_property_approved():
     if request.args.get('page'):
         property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==True).order_by(Property.created_at.desc()), per_page=10, page=int(request.args.get('page')))
     print(property_list)
-    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=True)
+    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=True, deletion=False)
 
 @views.route("/manage_property/unapproved")
 @login_required
@@ -47,8 +49,19 @@ def manage_property_unapproved():
     if request.args.get('page'):
         property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_approved==False).order_by(Property.created_at.desc()), per_page=10, page=int(request.args.get('page')))
 
-    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=False)
+    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=False, deletion=False)
 
+
+@views.route("/manage_property/pending_deletion")
+@login_required
+@landlord_required
+def manage_property_pending_deletion():
+    # get all properties owned by user
+    property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_pending_deletion==True).order_by(Property.created_at.desc()), per_page=10)
+    if request.args.get('page'):
+        property_list = db.paginate(db.select(Property).where(Property.user_id == current_user.user_id, Property.is_pending_deletion==True).order_by(Property.created_at.desc()), per_page=10, page=int(request.args.get('page')))
+
+    return render_template("manage_property_page.html", user=current_user, property_list=property_list, approved=False, deletion=True)
 
 @views.route("/manage_property/registerproperty", methods=["GET", "POST"])
 @login_required
@@ -110,10 +123,8 @@ def register_property():
                                        furnishing=form.furnishing.data,
                                        lease_term=form.lease_term.data,
                                        negotiable_pricing=form.negotiable.data,
-                                       is_approved=False,
                                        property_name=form.property_name.data,
                                        property_description=form.property_description.data,
-                                       created_at=datetime.now(),
                                        gender=form.gender.data)
         db.session.add(new_property)
         db.session.commit()
@@ -144,6 +155,7 @@ def register_property():
     return render_template("register_property.html", user=current_user, form=form)
 
 @views.route("/manage_property/edit_property/<prop_id>", methods=["GET", "POST"])
+@login_required
 @landlord_required
 def edit_property(prop_id):
     form = forms.EditProperty()
@@ -160,9 +172,15 @@ def edit_property(prop_id):
         form.lease_term.data = current_property.lease_term
         form.negotiable.data = current_property.negotiable_pricing
         form.property_description.data = current_property.property_description
-    else:
-        if form.validate_on_submit():
+    else: # POST
+        # edit property
+        if form.validate_on_submit() and form.edit_property_button.data:
 
+            # redirect user if wrong password
+            if not check_password_hash(current_user.password, form.confirm_password.data):
+                flash("Incorrect password", "error")
+                return redirect(url_for('views.edit_property', prop_id=prop_id))
+            
             new_monthly_rent = None
             new_num_bedrooms = None
             new_gender = None
@@ -253,6 +271,71 @@ def edit_property(prop_id):
                     db.session.commit()
 
             # flash success message
-            flash("Property info updated", "success")
+            flash(f"Property information updated", "success")
+            return redirect(url_for('views.manage_property_approved', prop_id=prop_id))
 
     return render_template("edit_property.html", user=current_user, form=form, prop_id=prop_id)
+
+@views.route("/manage_property/delete_property/<prop_id>", methods=["GET", "POST"])
+@login_required
+@landlord_required
+def delete_property(prop_id):
+    form = forms.DeletePropertyForm()
+    property = Property.query.filter_by(property_id=prop_id).first()
+
+    if not property:
+        flash("Invalid Property ID", "error")
+        return redirect(url_for('views.manage_property_approved'))
+    
+    # fill up form with existing data
+    form.property_id.data = property.property_id
+    form.property_name.data = property.property_name
+    form.property_description.data = property.property_description
+    form.block.data = property.block
+    form.street_name.data = property.street_name
+    form.building.data = property.building
+    form.postal_code.data = property.postal
+    form.town.data = property.town
+    form.flat_type.data = property.flat_type
+    form.monthly_rent.data = property.monthly_rent
+    form.num_bedrooms.data = property.number_of_bedrooms
+    form.floor_size.data = property.floorsize
+    form.ppsm.data = property.price_per_square_metre
+    form.year_built.data = property.year_built
+    form.furnishing.data = property.furnishing
+    form.floor_level.data = property.floor_level
+    form.lease_term.data = property.lease_term
+    form.negotiable.data = property.negotiable_pricing
+    form.created_at.data = property.created_at
+
+    # delete property
+    if form.validate_on_submit() and form.delete_field.data:
+        # redirect user if wrong password
+        if not check_password_hash(current_user.password, form.confirm_password.data):
+            flash("Password entered is wrong", "error")
+            return redirect(url_for('views.delete_property', prop_id=prop_id))
+        admin = User.query.filter_by(account_type='admin').first()
+        Notifications.new_notification(user_id=admin.user_id,
+                                        title=f"Property {prop_id} Deletion Request",
+                                        message=f"User {current_user.user_id} {current_user.first_name} {current_user.last_name} has requested to delete property {prop_id}",
+                                        )
+        property.is_pending_deletion = True
+        db.session.commit()
+        flash(f"Property is set to pending deletion", "success")
+        return redirect(url_for('views.manage_property_approved', prop_id=prop_id))
+    
+    return render_template("delete_property_page.html", user=current_user, form=form, prop_id=prop_id)
+
+
+@views.route("/manage_property/cancel_deletion/<prop_id>", methods=["POST"])
+@login_required
+@landlord_required
+def cancel_deletion(prop_id):
+    current_property = Property.query.filter_by(property_id=prop_id).first()
+    current_property.is_pending_deletion = False
+    db.session.commit()
+    flash(f"Property deletion request cancelled", "success")
+    return redirect(url_for('views.manage_property_pending_deletion', prop_id=prop_id))
+
+
+# view pending deletion page

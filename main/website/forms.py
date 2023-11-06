@@ -132,7 +132,8 @@ class AdminPropertyViewForm(FlaskForm):
     created_at = StringField("Created At", render_kw={'disabled': True})
     approve_field = SubmitField("Approve Property")
     reject_field = SubmitField("Reject Property")
-    reject_reason = StringField("Reason For Rejection (if applicable)", widget=TextArea())
+    reject_reason = StringField("Reason (if applicable)", widget=TextArea())
+    delete_field = SubmitField("Delete Property")
 
 class EditProperty(FlaskForm):
     property_name = StringField('Property Name', widget=TextArea())
@@ -147,8 +148,33 @@ class EditProperty(FlaskForm):
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('no', 'no'), ('yes', 'yes')])
     property_description = StringField('Property Description', widget=TextArea())
-    image = MultipleFileField("Insert up to 5 photos of the property")
+    image = MultipleFileField("Insert up to 5 photos of the property", [validators.DataRequired()])
     approval_form = FileField("Insert approval document", [validators.DataRequired()])
+    confirm_password = PasswordField('Enter Password To Make Changes', [validators.DataRequired()])
+    edit_property_button = SubmitField("Edit Property")
+
+class DeletePropertyForm(FlaskForm):
+    property_id = StringField("Property ID", render_kw={'disabled': True})
+    property_name = StringField("Property Name", render_kw={'disabled': True})
+    property_description = StringField("Property Description", render_kw={'disabled': True})
+    block = StringField("Block", render_kw={'disabled': True})
+    street_name = StringField("Street Name", render_kw={'disabled': True})
+    building = StringField("Building", render_kw={'disabled': True})
+    postal_code = StringField("Postal Code", render_kw={'disabled': True})
+    town = StringField("Town", render_kw={'disabled': True})
+    flat_type = StringField("Flat Type", render_kw={'disabled': True})
+    monthly_rent = StringField("Monthly Rent", render_kw={'disabled': True})
+    num_bedrooms = StringField("Number of Bedrooms", render_kw={'disabled': True})
+    floor_size = StringField("Floor Size", render_kw={'disabled': True})
+    ppsm = StringField("Price Per Square Metre", render_kw={'disabled': True})
+    year_built = StringField("Year Built", render_kw={'disabled': True})
+    furnishing = StringField("Furnishing", render_kw={'disabled': True})
+    floor_level = StringField("Floor Level", render_kw={'disabled': True})
+    lease_term = StringField("Lease Term", render_kw={'disabled': True})
+    negotiable = StringField("Negotiable", render_kw={'disabled': True})
+    created_at = StringField("Created At", render_kw={'disabled': True})
+    confirm_password = PasswordField('Enter Password To Make Changes', [validators.DataRequired()])
+    delete_field = SubmitField("Delete Property")
 
 """
 Forms for map view

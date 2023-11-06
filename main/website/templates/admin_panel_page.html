@@ -11,14 +11,18 @@ Admin Panel
 <div class="container pt-5">
     <div class="row">
         <div class="col-sm-12 text-center">
-            <a href="{{ url_for('admin.admin_panel') }}" class="btn btn-primary active">Unapproved Properties</a>
-            <!-- <a href="#" class="btn btn-primary">Something else</a> -->
+            <a href="{{ url_for('admin.admin_panel') }}" class="btn btn-primary {% if unapproved %}
+            active
+            {% endif %}">Unapproved Properties</a> 
+            <a href="{{ url_for('admin.admin_panel_pending_deletion') }}" class="btn btn-primary{% if pending_deletion %}
+            active
+            {% endif %}">Pending Deletion Properties</a>
         </div>
     </div>
     <hr>
     <div class='col-sm-12 pt-2'>
-        {% if unapproved_properties.items %}
-        {% for property in unapproved_properties  %}
+        {% if unapproved and properties.items %}
+        {% for property in properties  %}
         <div class="row pb-2">
             <div class="col-sm-4">
                 <img src="{{ url_for('properties_views.property_image_url', filename=property.property_images[0].image_url) }}" class="img-fluid" alt="Responsive image">
@@ -39,7 +43,7 @@ Admin Panel
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <a href="{{ url_for('admin.manage_approval', property_id=property.property_id) }}" class="btn btn-primary">Manage Property Listing</a>
+                        <a href="{{ url_for('admin.manage_approval', property_id=property.property_id, manage_type='default') }}" class="btn btn-primary">Manage Property Listing</a>
                     </div>
                 </div>
             </div>
@@ -47,15 +51,59 @@ Admin Panel
         <hr>
         {% endfor %}
         <div class="col-12">
-            {{ render_pagination(unapproved_properties, 'admin.admin_panel') }}
+            {{ render_pagination(properties, 'admin.admin_panel') }}
         </div>
         {% else %}
+            {% if unapproved %}
             <div class="row">
                 <div class="col-12">
                     <h2 class="text-center">There are no unapproved properties</h2>
                 </div>
+            </div> 
+            {% endif %}
+            {% if pending_deletion and properties.items %}
+            {% for property in properties  %}
+            <div class="row pb-2">
+                <div class="col-sm-4">
+                    <img src="{{ url_for('properties_views.property_image_url', filename=property.property_images[0].image_url) }}" class="img-fluid" alt="Responsive image">
+                </div>
+                <div class="col-sm-8">
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>{{ property.property_name }}</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <p>Landlord: {{ property.user.first_name}} {{ property.user.last_name}}</p>
+                            <p>User ID: {{ property.user.user_id }}</p>
+                            <p>Property ID: {{property.property_id}}</p>
+                            <p>Created on: {{property.created_at}} </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <a href="{{ url_for('admin.manage_approval', property_id=property.property_id, manage_type='delete') }}" class="btn btn-primary">Manage Deletion</a>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <hr>
+            {% endfor %}
+            <div class="col-12">
+                {{ render_pagination(properties, 'admin.admin_panel_pending_deletion') }}
+            </div>
+            {% else %}
+                {% if pending_deletion %}
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="text-center">There are no properties pending deletion</h2>
+                    </div>
+                </div> 
+                {% endif %}
+            {% endif %}
         {% endif %}
+        
     </div>
 </div>
 {% endblock content %}
