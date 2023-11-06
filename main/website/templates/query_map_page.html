@@ -45,7 +45,7 @@ Search for Properties
                     </div>
                 </div>   
             </form>
-                      
+            
             <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvasFiltersLabel">Filter Properties</h5>
@@ -55,38 +55,38 @@ Search for Properties
                     <form action="{{ url_for('properties_views.map_page') }}" method="post">
                         {{ filters_form.csrf_token }}
                         {{ filters_form.target_location}}
-
+                        
                         {% for field in filters_form %}
-                            {% if field.type != 'SelectMultipleField' and 'min' in field.name %}
-                                <div class="form-group pb-3">
-                                    {{ field.label }}
-                                    <div class="row">
-                                        <div class="col-sm-5">
-                                            {{ field(class_="form-control")|safe }}
-                                        </div>
-                                        <div class="col-sm-2 text-center">-</div>
-                            {% elif field.type != 'SelectMultipleField' and 'max' in field.name %}
-                                        <div class="col-sm-5">
-                                            {{ field(class_="form-control")|safe }}
-                                        </div>
-                                    </div>
+                        {% if field.type != 'SelectMultipleField' and 'min' in field.name %}
+                        <div class="form-group pb-3">
+                            {{ field.label }}
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    {{ field(class_="form-control")|safe }}
                                 </div>
-                            {% elif field.type == 'SelectMultipleField' %} 
-                                <div class="form-group pb-3">
-                                    {{ field.label(class_="form-label") }}
-                                    
-                                    {% for value, label in field.choices %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" {% if value in field.default %}
-                                            checked
-                                        {% endif %}>
-                                        <label class="form-check-label" for="flexCheck{{value}}" style="font-weight: normal!important;">
-                                            {{label}}
-                                        </label>
-                                    </div>
-                                    {% endfor %}
+                                <div class="col-sm-2 text-center">-</div>
+                                {% elif field.type != 'SelectMultipleField' and 'max' in field.name %}
+                                <div class="col-sm-5">
+                                    {{ field(class_="form-control")|safe }}
                                 </div>
-                            {% endif %}
+                            </div>
+                        </div>
+                        {% elif field.type == 'SelectMultipleField' %} 
+                        <div class="form-group pb-3">
+                            {{ field.label(class_="form-label") }}
+                            
+                            {% for value, label in field.choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" {% if value in field.default %}
+                                checked
+                                {% endif %}>
+                                <label class="form-check-label" for="flexCheck{{value}}" style="font-weight: normal!important;">
+                                    {{label}}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                         {% endfor %}
                         
                         <div class="form-group">
@@ -161,95 +161,94 @@ Search for Properties
             target_address_url = target_address.replaceAll(" ","-")
             
             // Marker for selected location
-            var marker = new google.maps.Marker({
+            var targetMarker = new google.maps.Marker({
                 position: { lat: target[0], lng: target[1] },
                 map: gmap,
-                title: target_address
+                title: target_address,
+                icon: {
+                    url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                }
             }); 
             
             sameCoord.push([target[0],target[1]])
             
             // Infowindow for selected location
-            google.maps.event.addListener(marker, 'click', (function(marker) {
-
+            google.maps.event.addListener(targetMarker, 'click', (function(targetMarker) {  
                 return function() {
                     infoWindow.setContent(
-                                '<div class="card" style="width: 18rem;">'+
-                                    '<div class="card-body">'+
-                                    '<h5 class="card-title">Target Location</h5>'+
-                                    '<p class="card-text">'+target_address+'</p>'+
-                                    '<p class="card-text">Singapore '+properties[i]['postal']+'</p>'+
-                                    '<p class="card-text">Rent: $'+properties[i]['monthly_rent']+'/month</p>'+
-                                    '<a class="btn btn-primary" target="_blank" jstcache="6" href="map/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+
-                                    '</div>'+
-                                '</div>'
-                                );
-                                infoWindow.open(gmap, marker);
-                            }
-                        })(marker));
-                        
-                        // Markers for queried properties
-                        var bounds = new google.maps.LatLngBounds();
-                        for (i=0;i<properties.length;i++){
-                            // actually it wasnt a rate limit issue but more of the same coordinate issue preventing locations with the same coordinates to be added
-                            // still a good way to not immediately place 3000+ markers onto the map i guess?
-                            // if (i%49==0){ // delay because google maps rate limits at 50 reqs per second
-                                //     await delay(2000).then(() => console.log('prevent rate limits'));
-                                // }
-                                
-                                var currLat = parseFloat(properties[i]["latitude"])
-                                var currLng = parseFloat(properties[i]["longitude"])
-                                var markerPosition = new google.maps.LatLng(currLat, currLng);
-                                bounds.extend(markerPosition);
-                                const found = sameCoord.some(r=>[currLat, currLng].indexOf(r) >=0)
-                                //console.log(found+properties[i]["block"])
-                                
-                                if (found){
-                                    var newCoord = getNewCoord(currLat,currLng)
-                                    currLat = newCoord[0]
-                                    currLng = newCoord[1]
-                                }
-                                
-                                sameCoord.push(currLat,currLng)
-                                //console.log(currLat,currLng)
-                                var address = properties[i]["block"] +" "+ properties[i]["street_name"] +" "+ properties[i]["building"]
-                                marker = new google.maps.Marker({
-                                    position: {
-                                        lat:currLat,
-                                        lng:currLng
-                                    },
-                                    map: gmap,
-                                    title: address
-                                });
-                                
-                                // Add info window to markers  
-                                google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                                    return function() {
-                                        infoWindow.setContent(
-                                        '<div class="card" style="width: 18rem;">'+
-                                            '<img src="/storage/Placeholder.png" class="card-img-top" alt="...">'+
-                                            '<div class="card-body">'+
-                                              '<h5 class="card-title">'+properties[i]['property_name']+'</h5>'+
-                                              '<p class="card-text">'+address+'</p>'+
-                                              '<p class="card-text">Singapore '+properties[i]['postal']+'</p>'+
-                                              '<p class="card-text">Rent: $'+properties[i]['monthly_rent']+'/month</p>'+
-                                              '<a class="btn btn-primary" target="_blank" jstcache="6" href="map/property/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+
-                                            '</div>'+
-                                          '</div>'
-                                        );
-                                        infoWindow.open(gmap, marker);
-                                    }   
-                                 })(marker, i));
-                                 gmap.fitBounds(bounds);
-                                 var maxZoom = 15;
-                                 if (gmap.getZoom() > maxZoom) {
-                                    gmap.setZoom(maxZoom);
-                                }
-
-                        }
+                    '<div class="card" style="width: 18rem;">'+
+                        '<div class="card-body">'+
+                            '<h5 class="card-title">Target Location</h5>'+
+                            '<p class="card-text">'+target_address+'</p>'+
+                        '</div>'+
+                    '</div>'
+                    );
+                    infoWindow.open(gmap, targetMarker);
+                }
+            })(targetMarker));
+                    
+            // Markers for queried properties
+            var bounds = new google.maps.LatLngBounds();
+            for (i=0;i<properties.length;i++){
+                // actually it wasnt a rate limit issue but more of the same coordinate issue preventing locations with the same coordinates to be added
+                // still a good way to not immediately place 3000+ markers onto the map i guess?
+                // if (i%49==0){ // delay because google maps rate limits at 50 reqs per second
+                    //     await delay(2000).then(() => console.log('prevent rate limits'));
+                    // }
+                    
+                var currLat = parseFloat(properties[i]["latitude"])
+                var currLng = parseFloat(properties[i]["longitude"])
+                var markerPosition = new google.maps.LatLng(currLat, currLng);
+                bounds.extend(markerPosition);
+                const found = sameCoord.some(r=>[currLat, currLng].indexOf(r) >=0)
+                //console.log(found+properties[i]["block"])
+                
+                if (found){
+                    var newCoord = getNewCoord(currLat,currLng)
+                    currLat = newCoord[0]
+                    currLng = newCoord[1]
+                }
+                
+                sameCoord.push(currLat,currLng)
+                //console.log(currLat,currLng)
+                var address = properties[i]["block"] +" "+ properties[i]["street_name"] +" "+ properties[i]["building"]
+                marker = new google.maps.Marker({
+                    position: {
+                        lat:currLat,
+                        lng:currLng
+                    },
+                    map: gmap,
+                    title: address
+                });
+                
+                // Add info window to markers  
+                google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                    return function() {
+                        infoWindow.setContent(
+                        '<div class="card" style="width: 18rem;">'+
+                            '<img src="/storage/'+properties[i]['image_url']+'" class="card-img-top" alt="...">'+
+                            '<div class="card-body">'+
+                                '<h5 class="card-title">'+properties[i]['property_name']+'</h5>'+
+                                '<p class="card-text">'+address+'</p>'+
+                                '<p class="card-text">Singapore '+properties[i]['postal']+'</p>'+
+                                '<p class="card-text">Rent: $'+properties[i]['monthly_rent']+'/month</p>'+
+                                '<a class="btn btn-primary" target="_blank" jstcache="6" href="map/property/'+properties[i]['property_id']+'?t_coords='+target[0]+','+target[1]+'&t_address='+target_address_url+'" tabindex="0"> <span>View more</span> </a>'+
+                            '</div>'+
+                        '</div>'
+                        );
+                        infoWindow.open(gmap, marker);
+                    }   
+                })(marker, i));
+                gmap.fitBounds(bounds);
+                var maxZoom = 15;
+                if (gmap.getZoom() > maxZoom) {
+                    gmap.setZoom(maxZoom);
+                }
+                
+            }
         }   
     }
-
+            
     // initialize map
     initMap();
     

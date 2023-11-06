@@ -122,18 +122,29 @@
                             <td> {% if j==0 %} 
                                     {{ property.block }} {{ property.street_name }} {{ property.building }} 
                                 {% else %} 
+                                    {% if leg['from']['name'] == 'path' %}
+                                    {{ itineraries['legs'][j-1]['from']['name'] }}
+                                    {% else %}
                                     {{ leg['from']['name'] }} {% if leg['from']['stopCode']  %}({{ leg['from']['stopCode'] }}){% endif %}
-                                {% endif %} </td>
+                                    {% endif %}
+                                {% endif %} 
+                            </td>
                             <td> {% if j==(itineraries['legs']|length-1) %} 
                                     {{target_location}} 
                                 {% else %} 
+                                    {% if leg['to']['name'] == 'path' %}
+                                    {{ itineraries['legs'][j+1]['to']['name'] }}
+                                    {% else %}
                                     {{ leg['to']['name'] }} {% if leg['to']['stopCode']  %}({{ leg['to']['stopCode'] }}){% endif %}
-                                {% endif %} </td>
+                                    {% endif %}
+                                {% endif %} 
+                            </td>
                             <td> {% if not leg['agencyId'] %}
                                     WALK
                                 {% else %}
                                     {{ leg['routeLongName'] }}
-                                {% endif %} </td>
+                                {% endif %} 
+                            </td>
                             <td> {{ (leg['duration']/60)|round|int }} min(s) </td>
                         </tr> 
                         {% endfor %}
@@ -168,8 +179,6 @@
             <h4>(Price Per Square Meter)</h4>
             <canvas id="priceChart"></canvas>
         </div>
-        <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 
         <div class="row">
             <div class="col-sm-6 text-center">
@@ -203,13 +212,13 @@
             favHeart.style.color = '#df6951';
         }
         $.post("{{ url_for('properties_views.favourite_property',property_id=property.property_id) }}", function(data, status) {
-            console.log(data);
+            //console.log(data);
         });
         
     });
 
     var route_data = {{route_data|tojson}};
-    console.log(route_data);
+    //console.log(route_data);
     // auto complete search bar
     $("#target_location").on("change paste keyup", function() {
         //console.log($(this).val());

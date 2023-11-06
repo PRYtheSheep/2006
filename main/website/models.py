@@ -229,6 +229,8 @@ class Property(db.Model):
         for result in result_list:
             within_distance = Property.distance_from_property(input_latitude, input_longitude, min_distance, max_distance, result)
             if within_distance:
+                first_image = PropertyImages.query.filter_by(property_id=result['property_id']).first()
+                result['image_url'] = first_image.image_url
                 result['latitude'] = float(result['latitude'])
                 result['longitude'] = float(result['longitude'])
                 result['price_per_square_metre'] = float(result['price_per_square_metre'])
