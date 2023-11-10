@@ -29,6 +29,7 @@ def create_app():
         upsert_users(1, "johndoe@landlord.com", "johndoe", "landlord", "John", "Doe") 
         upsert_users(2, "admin@admin.com", "admin", "admin", "Admin", "User") 
         upsert_users(3, "jackdoe@tenant.com", "jackdoe", "tenant", "Jack", "Doe")
+        upsert_users(4, "test@test.com", "test", "tenant", "Test", "User")
 
     # init login manager
     login_manager = LoginManager()

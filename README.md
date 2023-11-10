@@ -18,7 +18,7 @@ password: 96173880
 9. Make sure that the property_images table has these information first. If not, continuously refresh the schemas until the actual property_images table appears <br/>
 ![property_images_columns_image](property_images_columns.png)
 10. Website is now working
-11. NOTE: Website may stop working if the secret_key email/password combination has been changed
+11. **NOTE:** Website may stop working if the secret_key email/password combination has been changed
 12. You are free to change it to your own email/password
 
 <hr/>
@@ -37,12 +37,22 @@ password: 123456789aA$
 email: jackdoe@tenant.com<br>
 password: 123456789aA$
 
+4. Tenant <br>
+email: test@test.com <br>
+password: 123456789aA$
+
 <hr/>
 
 ### Things to take note when editing/deleting default properties
 1. **ALL** default properties are using the same placeholder image and approval documents
 2. To prevent default properties from having broken images and approval documents, **DO NOT** edit/delete them
 3. **ONLY** edit/delete properties that you have created
+
+<hr>
+
+### Blackbox Testing
+1. Run the server
+2. On another terminal, run "pytest"
 
 
 

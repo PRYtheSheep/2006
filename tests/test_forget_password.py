@@ -25,5 +25,3 @@ def forget_password_request_exceed_limit(client):
 
     assert response.status_code == 200
     assert b'You have requested a password reset in the last 5 minutes. Please try again later.' in response.data
-
-# change forget password tbd
