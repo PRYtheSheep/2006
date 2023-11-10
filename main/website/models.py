@@ -375,8 +375,6 @@ class AccountRecovery(db.Model):
         else:
             u = str(uuid.uuid4())
             # u = 218b7a1c-fa21-4e7b-9cfd-2d05e939ac28 # for testing purposes
-            email_content = f"Password reset link: {request_url_root}/forgetpassword/{u}"
-            email_sender.send_email(user_obj.email, "Password Reset Request", email_content)
 
             if not account_recovery:  # first time resetting password
                 new_ar = AccountRecovery(user_id=user_obj.user_id,
@@ -387,6 +385,8 @@ class AccountRecovery(db.Model):
                 account_recovery.created_at = datetime.now()
 
             db.session.commit()
+            email_content = f"Password reset link: {request_url_root}/forgetpassword/{u}"
+            email_sender.send_email(user_obj.email, "Password Reset Request", email_content)
 
             return ("A password reset link has been sent to your email", 'success')
 
@@ -412,7 +412,7 @@ class Notifications(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     title = db.Column(db.String(150))
-    message = db.Column(db.String(150))
+    message = db.Column(db.String(300))
     created_at = db.Column(db.DateTime, default=datetime.now())
     is_read = db.Column(db.Boolean, default=False)
 

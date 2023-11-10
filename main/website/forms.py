@@ -148,7 +148,7 @@ class EditProperty(FlaskForm):
                                                     ('Flexible', 'Flexible')])
     negotiable = SelectField('Negotiable Pricing', choices=[('no', 'no'), ('yes', 'yes')])
     property_description = StringField('Property Description', widget=TextArea())
-    image = MultipleFileField("Insert up to 5 photos of the property", [validators.DataRequired()])
+    image = MultipleFileField("Insert up to 5 photos of the property")
     approval_form = FileField("Insert approval document", [validators.DataRequired()])
     confirm_password = PasswordField('Enter Password To Make Changes', [validators.DataRequired()])
     edit_property_button = SubmitField("Edit Property")

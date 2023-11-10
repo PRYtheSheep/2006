@@ -249,7 +249,8 @@ def edit_property(prop_id):
             db.session.commit()
 
             # check if there is any images uploaded
-            if form.image.data:
+            if all((item.filename != "") for item in form.image.data ):
+                print("running")
                 # new images were submitted
                 # get the list of previous images from property image database
                 current_images = PropertyImages.query.filter_by(property_id=prop_id).first()
