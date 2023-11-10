@@ -91,12 +91,13 @@ Home
             </div>
         </div>
     </div>
+    {% if latest_properties %}
     <hr/>
     <div class="row text-center pb-5 align-content-center">
         {% for property in latest_properties %}
         <div class="col-lg-4 mb-3 d-flex align-items-stretch content">
             <div class="card" style="width: 18rem;">
-                <img src="{{ url_for('properties_views.property_image_url', filename=property.property_images[0].image_url) }}" class="card-img-top" alt="...">
+                <img src="" class="card-img-top" alt="...">
                 <div class="card-body">
                     <h5 class="card-title">{{property.property_name}}</h5>
                     <p class="card-text">{{property.block}} {{ property.street_name }} {% if property.building != 'NIL' %}
@@ -115,6 +116,7 @@ Home
         </div>
         {% endfor %}
     </div>
+    {% endif %}
 </div>
 
 {% endblock content %}

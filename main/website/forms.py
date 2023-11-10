@@ -22,7 +22,7 @@ class RegistrationForm(FlaskForm):
         validators.Length(min=12, max=18),
         validators.DataRequired(),
         validators.EqualTo('confirm_password', message='Passwords must match.'),
-        validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
+        validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&_])[A-Za-z\d@$!%*#?&_]{12,18}$"
                           ,
                           message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
     ])
@@ -44,7 +44,7 @@ class ChangeForgetPasswordForm(FlaskForm):
         validators.Length(min=12, max=18),
         validators.DataRequired(),
         validators.EqualTo('confirm_password', message='Passwords must match.'),
-        validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
+        validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&_])[A-Za-z\d@$!%*#?&_]{12,18}$"
                           ,
                           message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
     ])
@@ -64,7 +64,7 @@ class ChangePasswordForm(FlaskForm):
     validators.Length(min=12, max=18),
     validators.DataRequired(),
     validators.EqualTo('confirm_new_password', message='Passwords must match.'),
-    validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{12,18}$"
+    validators.Regexp("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&_])[A-Za-z\d@$!%*#?&_]{12,18}$"
                         ,
                         message="The password must be 12-18 characters, contain at least one letter, one number and one special character.")
     ])

@@ -143,15 +143,15 @@
 	{% endblock content %}
 	
 	<div class="container">
-		<footer class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 my-5 border-top">
-			<div class="col mb-3">
-				<a href="{{ url_for('views.landing_page') }}" class="d-flex align-items-center mb-3 link-body-emphasis text-decoration-none">
+		<footer class="row py-5 my-5 border-top">
+			<div class="text-center">
+				<a href="{{ url_for('views.landing_page') }}" class="text-decoration-none">
 					<img src="{{url_for('static', filename='images/logo_black.png') }}" class="img-fluid"/>
 				</a>
 				<p class="text-body-secondary">Flat rental has never been easier</p>
 			</div>
 			
-			<div class="col mb-3">
+			<!-- <div class="col mb-3">
 				<h5>Company</h5>
 				<ul class="nav flex-column">
 					<li class="nav-item mb-2"><a href="#" class="nav-link p-0 text-body-secondary">About Us</a></li>
@@ -181,7 +181,7 @@
 						<button class="btn btn-primary" type="button">Subscribe</button>
 					</div>
 				</form>
-			</div>
+			</div> -->
 			
 		</footer>
 	</div>

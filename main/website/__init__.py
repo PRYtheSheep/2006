@@ -66,7 +66,7 @@ def upsert_users(user_id, email, username, account_type, first_name, last_name):
     upsert_stmt = upsert(User).values(
         user_id=user_id,
         email=email,
-        password=generate_password_hash("123456789aA$$"),
+        password=generate_password_hash("123456789aA$"),
         username=username,
         account_type=account_type,
         first_name=first_name,

@@ -220,7 +220,8 @@ class Property(db.Model):
                     Property.negotiable_pricing.in_(is_negotiable),
                     Property.flat_type.in_(flat_type),
                     Property.gender.in_(gender),
-                    Property.is_approved == is_approved)
+                    Property.is_approved == is_approved,
+                    Property.is_pending_deletion == False)
         
         results = db.session.execute(stmt).mappings().all()
     
