@@ -68,6 +68,8 @@ def map_page():
         year_built_max = filters_form.year_built_max.data
         floor_level_min = filters_form.floor_level_min.data
         floor_level_max = filters_form.floor_level_max.data
+        approval_date_min = filters_form.approval_date_min.data
+        approval_date_max = filters_form.approval_date_max.data
         # if no filters are selected, use default values, so at least something is returned
         furnish_status = filters_form.furnish_status.data if filters_form.furnish_status.data else ['fully furnished', 'partially furnished', 'not furnished']
         lease_term = filters_form.lease_term.data if filters_form.lease_term.data else ['1 year','2 years','3 years','short term','flexible']
@@ -119,6 +121,8 @@ def map_page():
             max_year_built=year_built_max,
             min_floor_level=floor_level_min,
             max_floor_level=floor_level_max,
+            min_approval_date=approval_date_min,
+            max_approval_date=approval_date_max,
             furnish_status=furnish_status,
             lease_term=lease_term,
             is_negotiable=negotiable,
