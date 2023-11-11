@@ -54,3 +54,93 @@
 .button_padding{
     padding-left: 20px;
 }
+.container.pt-5 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.row-md-4 {
+    flex-basis: 50%; 
+    max-width: 50%; 
+}
+#offcanvasFilters {
+    position: fixed; 
+    top: 60px; 
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%; 
+}
+
+#offcanvasFilters::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 70%;
+    transform: translateX(-50%);
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #fff; 
+}
+.form-check-2 {
+    display: inline-block; 
+    margin-right: 10px; 
+}
+.form-check-input-2 {
+    display: none; 
+}
+.form-check-label-2 {
+    display: inline-block;
+    
+    padding: 3px 11px;
+    margin-right: 10px; 
+    cursor: pointer; 
+    border-radius: 7px; 
+    background-color: #f8f9fa; 
+}
+
+/* Style for when the checkbox is checked */
+.form-check-input-2:checked + .form-check-label-2 {
+    background-color: #ee7158; /* Darker background for selected */
+    color: white;
+}
+
+.search-controls-2 {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px; 
+}
+
+.search-form-2 {
+    display: flex;
+    width: 100%; 
+}
+
+.form-group-2 {
+    flex-grow: 5; 
+    margin-right: 10px; 
+}
+
+.form-control-2 {
+    width: 100%; 
+}
+
+.search-btn-2, .filter-btn-2 {
+    flex-basis: 15%; 
+}
+
+.search-and-controls-container {
+    width: 100%; /* Same width as the map */
+    background-color: #ebe6e5; /* Choose your desired background color */
+    padding: 30px; /* Add some padding */
+    box-sizing: border-box; /* Ensures padding is included in the width */
+    border-radius: 15px; /* Rounded corners */
+}

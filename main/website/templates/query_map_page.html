@@ -31,8 +31,9 @@ Search for Properties
 
 <div class="container pt-5">
     {% from "includes/formhelper.html" import render_field %}
-    <div class="row">
-        <div class="row-md-4">
+
+        <div class="search-controls">
+            <div class="search-and-controls-container">
             <form action="{{ url_for('properties_views.map_page') }}" method="post">
                 <div class="querymapflex">
                     {{ form.csrf_token }}
@@ -41,11 +42,11 @@ Search for Properties
                     </div>
                     <div class="querymapflex2">
                         {{form.submit_target_location_form(class_="btn btn-primary")}}
-                        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters" aria-controls="offcanvasScrolling"><i class="fa-solid fa-filter"></i></button>
+                        <button class="btn btn-primary search-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters" aria-controls="offcanvasScrolling"><i class="fa-solid fa-filter"></i></button>
                     </div>
                 </div>   
             </form>
-            
+            </div>
             <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="offcanvasFiltersLabel">Filter Properties</h5>
@@ -76,11 +77,11 @@ Search for Properties
                             {{ field.label(class_="form-label") }}
                             
                             {% for value, label in field.choices %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" {% if value in field.default %}
+                            <div class="form-check-2">
+                                <input class="form-check-input-2" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" {% if value in field.default %}
                                 checked
                                 {% endif %}>
-                                <label class="form-check-label" for="flexCheck{{value}}" style="font-weight: normal!important;">
+                                <label class="form-check-label-2" for="flexCheck{{value}}" style="font-weight: normal!important;">
                                     {{label}}
                                 </label>
                             </div>
