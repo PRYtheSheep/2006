@@ -54,23 +54,36 @@
 .button_padding{
     padding-left: 20px;
 }
-.container.pt-5 {
+/* .container.pt-5 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+} */
+
+/* .row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+} */
+
+.cont-query-page {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.row {
+/* .row-filters {
     width: 100%;
     display: flex;
     justify-content: center;
-}
-
-.row-md-4 {
+}  */
+/* .row-md-4 {
     flex-basis: 50%; 
     max-width: 50%; 
-}
+} */
+/*
 #offcanvasFilters {
     position: fixed; 
     top: 60px; 
@@ -88,7 +101,7 @@
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
     border-bottom: 10px solid #fff; 
-}
+} */
 .form-check-2 {
     display: inline-block; 
     margin-right: 10px; 
@@ -98,9 +111,8 @@
 }
 .form-check-label-2 {
     display: inline-block;
-    
     padding: 3px 11px;
-    margin-right: 10px; 
+    margin-bottom: 5px;
     cursor: pointer; 
     border-radius: 7px; 
     background-color: #f8f9fa; 
@@ -108,7 +120,7 @@
 
 /* Style for when the checkbox is checked */
 .form-check-input-2:checked + .form-check-label-2 {
-    background-color: #ee7158; /* Darker background for selected */
+    background-color: #ffc107; /* Darker background for selected */
     color: white;
 }
 
@@ -143,4 +155,4 @@
     padding: 30px; /* Add some padding */
     box-sizing: border-box; /* Ensures padding is included in the width */
     border-radius: 15px; /* Rounded corners */
-}
+} 

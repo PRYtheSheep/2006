@@ -29,9 +29,8 @@ Search for Properties
 
 {% block content %}
 
-<div class="container pt-5">
+<div class="container pt-5 cont-query-page">
     {% from "includes/formhelper.html" import render_field %}
-
         <div class="search-controls">
             <div class="search-and-controls-container">
             <form action="{{ url_for('properties_views.map_page') }}" method="post">
@@ -42,62 +41,70 @@ Search for Properties
                     </div>
                     <div class="querymapflex2">
                         {{form.submit_target_location_form(class_="btn btn-primary")}}
-                        <button class="btn btn-primary search-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilters" aria-controls="offcanvasScrolling"><i class="fa-solid fa-filter"></i></button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="fa-solid fa-filter"></i></button>
                     </div>
                 </div>   
             </form>
             </div>
-            <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasFilters" aria-labelledby="offcanvasFiltersLabel">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="offcanvasFiltersLabel">Filter Properties</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <form action="{{ url_for('properties_views.map_page') }}" method="post">
-                        {{ filters_form.csrf_token }}
-                        {{ filters_form.target_location}}
-                        
-                        {% for field in filters_form %}
-                        {% if field.type != 'SelectMultipleField' and 'min' in field.name %}
-                        <div class="form-group pb-3">
-                            {{ field.label }}
-                            <div class="row">
-                                <div class="col-sm-5">
-                                    {{ field(class_="form-control")|safe }}
-                                </div>
-                                <div class="col-sm-2 text-center">-</div>
-                                {% elif field.type != 'SelectMultipleField' and 'max' in field.name %}
-                                <div class="col-sm-5">
-                                    {{ field(class_="form-control")|safe }}
-                                </div>
-                            </div>
-                        </div>
-                        {% elif field.type == 'SelectMultipleField' %} 
-                        <div class="form-group pb-3">
-                            {{ field.label(class_="form-label") }}
+        </div>
+        <br>
+        <!-- Filter Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="filterModalLabel">Filter Properties</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('properties_views.map_page') }}" method="post">
+                            {{ filters_form.csrf_token }}
+                            {{ filters_form.target_location}}
                             
-                            {% for value, label in field.choices %}
-                            <div class="form-check-2">
-                                <input class="form-check-input-2" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" {% if value in field.default %}
-                                checked
-                                {% endif %}>
-                                <label class="form-check-label-2" for="flexCheck{{value}}" style="font-weight: normal!important;">
-                                    {{label}}
-                                </label>
+                            {% for field in filters_form %}
+                            {% if field.type != 'SelectMultipleField' and 'min' in field.name %}
+                            <div class="form-group pb-3">
+                                {{ field.label }}
+                                <div class="row">
+                                    <div class="col-sm-5">
+                                        {{ field(class_="form-control")|safe }}
+                                    </div>
+                                    <div class="col-sm-2 text-center">-</div>
+                                    {% elif field.type != 'SelectMultipleField' and 'max' in field.name %}
+                                    <div class="col-sm-5">
+                                        {{ field(class_="form-control")|safe }}
+                                    </div>
+                                </div>
                             </div>
+                            {% elif field.type == 'SelectMultipleField' %} 
+                            <div class="form-group pb-3">
+                                <div class="row">
+                                    {{ field.label(class_="form-label") }}
+                                </div>
+                                
+                                {% for value, label in field.choices %}
+                                <div class="form-check-2">
+                                    <input class="form-check-input-2" type="checkbox" name='{{field.name}}' value="{{value}}" id="flexCheck{{value}}" 
+                                    {% if value in field.default %}
+                                    checked
+                                    {% endif %}>
+                                    <label class="form-check-label-2" for="flexCheck{{value}}" style="font-weight: normal!important;">
+                                        {{label}}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                                
+                            </div>
+                            {% endif %}
                             {% endfor %}
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                        
-                        <div class="form-group">
-                            {{filters_form.submit_filters_form(class_="btn btn-primary")}}
-                        </div>
-                    </form>
+                    </div>
+                    <div class="modal-footer">
+                        {{filters_form.submit_filters_form(class_="btn btn-primary")}}
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <br>
         <div id="propertyFound"></div>
         <br>
         <div id="map-container"></div>
